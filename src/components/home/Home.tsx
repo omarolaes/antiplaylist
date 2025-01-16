@@ -16,7 +16,6 @@ import TrackList from '../player/TrackList';
 import LoadingSpinner from "../general/LoadingSpinner";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabase";
-import AdvertiseHere from "./AdvertiseHere";
 import Footer from './Footer';
 import Head from 'next/head';
 
@@ -689,7 +688,7 @@ const HomePage: React.FC<HomePageProps> = ({ initialData }) => {
         <meta property="og:description" content="Test your music knowledge by identifying genres from music videos." />
       </Head>
       <main className="min-h-screen">
-        <Header setUseYouTubeMode={setUseYouTubeMode} />
+        <Header />
 
         {(isLoadingNextTrack || isLoading) && <LoadingOverlay />}
         
@@ -743,9 +742,6 @@ const HomePage: React.FC<HomePageProps> = ({ initialData }) => {
                   onNextTrack={handleNextTrack}
                   isLoadingNextTrack={isLoadingNextTrack}
                 />
-              </div>
-              <div className="hidden lg:block flex-none">
-                <AdvertiseHere />
               </div>
             </div>
           </div>

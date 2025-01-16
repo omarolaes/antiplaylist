@@ -3,8 +3,8 @@
 import { useEffect, useRef } from 'react'
 
 const chars = '░▒▓'.split('')
-const numLines = 50
-const numCharsPerLine = 35
+const numLines = 100
+const numCharsPerLine = 50
 
 declare global {
   interface HTMLCanvasElement {
@@ -61,13 +61,13 @@ export default function BackgroundShaderScene() {
         // Use the stored drawing dimensions instead of getBoundingClientRect
         const centerX = canvas.drawWidth / 2
         const centerY = canvas.drawHeight / 2
-        const radius = Math.min(canvas.drawWidth, canvas.drawHeight) * 0.4
+        const radius = Math.min(canvas.drawWidth, canvas.drawHeight) * 0.8
 
         // Clear the entire canvas using the scaled dimensions
         ctx.clearRect(0, 0, canvas.drawWidth, canvas.drawHeight)
         const maxDistance = radius * 0.6
 
-        ctx.font = '12px monospace'
+        ctx.font = '28px monospace'
         ctx.textAlign = 'center'
         
         linesRef.current.forEach((line, i) => {

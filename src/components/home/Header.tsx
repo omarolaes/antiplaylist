@@ -9,44 +9,19 @@ import { BsHeart } from "react-icons/bs";
 import { supabase } from "@/lib/supabase";
 
 interface HeaderProps {
-  setUseYouTubeMode: (value: boolean) => void;
+  // setUseYouTubeMode prop removed
 }
 
-const Header: React.FC<HeaderProps> = ({ setUseYouTubeMode }) => {
+const Header: React.FC<HeaderProps> = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const [youtubeQuota, setYoutubeQuota] = useState<number | null>(null);
-  const [useYouTubeMode, setLocalYouTubeMode] = useState(false);
-  const [isLocalhost, setIsLocalhost] = useState(false);
 
   useEffect(() => {
     console.log("Current user:", user);
     console.log("User email:", user?.email);
-    console.log("Is localhost:", isLocalhost);
-    console.log("YouTube quota:", youtubeQuota);
-    
-    setIsLocalhost(window.location.hostname === "localhost");
-
-    const fetchYoutubeQuota = async () => {
-      if (!isLocalhost && user?.email?.toLowerCase() !== "omarolaes@gmail.com") return;
-
-      try {
-        const response = await fetch("/api/youtube-quota");
-        if (!response.ok) {
-          console.warn("YouTube quota fetch failed:", response.statusText);
-          return;
-        }
-        const data = await response.json();
-        setYoutubeQuota(data.quota);
-      } catch (error) {
-        console.warn("Error fetching YouTube quota:", error);
-      }
-    };
-
-    fetchYoutubeQuota();
-  }, [isLocalhost, user]);
+  }, [user]);
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -80,16 +55,6 @@ const Header: React.FC<HeaderProps> = ({ setUseYouTubeMode }) => {
     }
   };
 
-  const handleYouTubeModeToggle = () => {
-    const newValue = !useYouTubeMode;
-    setLocalYouTubeMode(newValue);
-    setUseYouTubeMode(newValue);
-  };
-
-  const calculateQuotaPercentage = (quota: number) => {
-    return (quota / 10000) * 100;
-  };
-
   return (
     <div className="w-full py-4 bg-white z-50">
       <div className="container mx-auto px-1 flex items-center justify-between tracking-wide uppercase">
@@ -115,29 +80,6 @@ const Header: React.FC<HeaderProps> = ({ setUseYouTubeMode }) => {
         </button>
 
         <nav className="hidden md:flex items-center gap-6 text-sm">
-          {youtubeQuota !== null && (
-            user?.email?.toLowerCase() === "omarolaes@gmail.com" || 
-            isLocalhost
-          ) && (
-            <button
-              onClick={handleYouTubeModeToggle}
-              className={`text-xs px-6 py-1 bg-white transition-all uppercase ${
-                useYouTubeMode 
-                  ? 'text-red-500 border-red-500' 
-                  : 'text-zinc-950 hover:text-red-500 hover:border-red-500'
-              }`}
-            >
-              <div className="flex items-center gap-1 w-full h-1 bg-gray-200 rounded">
-                <div 
-                  className="h-full bg-red-500 rounded transition-all"
-                  style={{ width: `${calculateQuotaPercentage(youtubeQuota)}%` }}
-                />
-              </div>
-              <span className="text-xs text-gray-600">
-                ({calculateQuotaPercentage(youtubeQuota).toFixed(1)}%)
-              </span>
-            </button>
-          )}
           {user && (
             <>
               <Link
@@ -175,14 +117,6 @@ const Header: React.FC<HeaderProps> = ({ setUseYouTubeMode }) => {
             <nav className="flex flex-col items-center pb-32">
               {user && (
                 <>
-                  <button
-                    onClick={handleYouTubeModeToggle}
-                    className={`transition-colors w-full text-center py-2 ${
-                      useYouTubeMode ? 'text-red-500' : 'text-zinc-950 hover:text-red-500'
-                    }`}
-                  >
-                    Toggle YouTube Mode
-                  </button>
                   <Link
                     href="/profile"
                     className="text-zinc-950 transition-colors w-full text-center py-2 hover:text-green-500"
