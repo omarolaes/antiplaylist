@@ -50,7 +50,6 @@ type Props = {
   params: {
     slug: string
   }
-  searchParams: { [key: string]: string | string[] | undefined }
 }
 
 export async function generateMetadata(
@@ -83,7 +82,7 @@ export async function generateMetadata(
   };
 }
 
-const GenrePage = async ({ params, searchParams }: Props) => {
+const GenrePage = async ({ params }: Props) => {
   const data = await getGenreData(params.slug);
 
   if (!data) {
