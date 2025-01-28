@@ -21,7 +21,7 @@ export const metadata: Metadata = {
       "An experimental radio platform redefining music discovery. Explore, identify, and journey through an ever-evolving soundscape of global genres.",
     type: "website",
     locale: "en_US",
-    url: "https://AntiPlaylistradio.com",
+    url: "https://AntiPlaylist.com",
     siteName: "AntiPlaylist",
     images: [
       {
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: "https://AntiPlaylistradio.com",
+    canonical: "https://AntiPlaylist.com",
   },
   other: {
     "application-name": "AntiPlaylist",

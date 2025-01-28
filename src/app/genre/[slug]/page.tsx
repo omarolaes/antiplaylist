@@ -46,18 +46,16 @@ const getGenreData = unstable_cache(
   }
 );
 
-// Update the Props interface to match Next.js 14+ typing
-type Props = {
-  params: {
+interface Props {
+  params: Promise<{
     slug: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+  }>;
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export async function generateMetadata(
-  { params, searchParams: _searchParams }: Props
-): Promise<Metadata> {
-  const data = await getGenreData(params.slug);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await params;
+  const data = await getGenreData(resolvedParams.slug);
 
   if (!data) {
     return {
@@ -72,7 +70,7 @@ export async function generateMetadata(
     openGraph: {
       title: `${data.genre.name} Music | AntiPlaylist`,
       description: data.genre.description || `Explore and discover ${data.genre.name} music on AntiPlaylist.`,
-      url: `https://antiplaylistradio.com/genre/${params.slug}`,
+      url: `https://antiplaylist.com/genre/${resolvedParams.slug}`,
       siteName: "AntiPlaylist",
       type: "website",
     },
@@ -84,9 +82,9 @@ export async function generateMetadata(
   };
 }
 
-// Update the page component props
-const GenrePage = async ({ params, searchParams: _searchParams }: Props) => {
-  const data = await getGenreData(params.slug);
+export default async function GenrePage({ params }: Props) {
+  const resolvedParams = await params;
+  const data = await getGenreData(resolvedParams.slug);
 
   if (!data) {
     notFound();
@@ -110,6 +108,4 @@ const GenrePage = async ({ params, searchParams: _searchParams }: Props) => {
       </Suspense>
     </div>
   );
-}
-
-export default GenrePage; 
+} 
