@@ -48,11 +48,10 @@ const getGenreData = unstable_cache(
 
 type Props = {
   params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export async function generateMetadata(
-  { params }: Props
+  { params = { slug: "" } }: Props
 ): Promise<Metadata> {
   const data = await getGenreData(params.slug);
 
@@ -81,7 +80,7 @@ export async function generateMetadata(
   };
 }
 
-const GenrePage = async ({ params }: Props) => {
+const GenrePage = async ({ params = { slug: "" } }: Props) => {
   const data = await getGenreData(params.slug);
 
   if (!data) {
