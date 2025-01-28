@@ -56,11 +56,11 @@ const Header: React.FC<HeaderProps> = () => {
   };
 
   return (
-    <div className="w-full py-4 bg-white z-50">
+    <div className="w-full py-4 bg-zinc-950 z-50">
       <div className="container mx-auto px-1 flex items-center justify-between tracking-wide uppercase">
         <button
           onClick={handleLogoClick}
-          className="text-3xl font-extrabold leading-[0.5] text-zinc-950 flex items-end gap-2"
+          className="text-3xl font-extrabold leading-[0.5] text-white flex items-end gap-2"
         >
           <span className="italic tracking-tighter">AntiPlaylist</span>
           <small className="ml-2 text-[10px] font-medium leading-[0.5] tracking-wider hidden md:block opacity-40 uppercase">
@@ -84,13 +84,13 @@ const Header: React.FC<HeaderProps> = () => {
             <>
               <Link
                 href="/profile"
-                className="text-xs px-6 py-1 bg-white text-zinc-950 hover:text-green-500 hover:border-green-500 transition-all uppercase flex items-center gap-1"
+                className="text-xs px-6 py-1 bg-zinc-950 text-white hover:text-green-500 hover:border-green-500 transition-all uppercase flex items-center gap-1"
               >
                 <BsHeart className="mr-1" /> FAVORITES
               </Link>
               <button
                 onClick={signOut}
-                className="text-xs px-6 py-1 bg-white text-zinc-950 border-2 border-zinc-950 hover:bg-zinc-950 hover:text-white transition-all uppercase"
+                className="text-xs px-6 py-1 bg-zinc-950 text-white border-2 border-white/10 hover:bg-white/5 hover:text-white transition-all uppercase"
               >
                 Sign Out
               </button>
@@ -98,14 +98,14 @@ const Header: React.FC<HeaderProps> = () => {
           )}
           <Link
             href="/about"
-            className="text-xs px-6 py-1 bg-white text-zinc-950 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-zinc-950 after:transition-all hover:after:w-full uppercase"
+            className="text-xs px-6 py-1 bg-zinc-950 text-white relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-white/10 after:transition-all hover:after:w-full uppercase"
           >
             ABOUT
           </Link>
           {!user && (
             <button
               onClick={handleSignIn}
-              className="text-xs px-6 py-1 border-2 border-zinc-950 relative text-zinc-950 hover:text-white transition-all uppercase before:absolute before:inset-0 before:bg-zinc-950 before:origin-left before:scale-x-0 before:transition-transform before:duration-300 hover:before:scale-x-100"
+              className="text-xs px-6 py-1 border-2 border-white/10 relative text-white hover:text-green-500 transition-all uppercase before:absolute before:inset-0 before:bg-white/10 before:origin-left before:scale-x-0 before:transition-transform before:duration-300 hover:before:scale-x-100"
             >
               <span className="relative z-10">Sign in</span>
             </button>
@@ -113,13 +113,13 @@ const Header: React.FC<HeaderProps> = () => {
         </nav>
 
         {isMenuOpen && (
-          <div className="fixed top-[60px] left-0 right-0 bg-white border-b border-zinc-950 md:hidden z-50 h-full flex flex-col justify-center">
+          <div className="fixed top-[60px] left-0 right-0 bg-zinc-950 border-b border-white/10 md:hidden z-50 h-full flex flex-col justify-center">
             <nav className="flex flex-col items-center pb-32">
               {user && (
                 <>
                   <Link
                     href="/profile"
-                    className="text-zinc-950 transition-colors w-full text-center py-2 hover:text-green-500"
+                    className="text-white transition-colors w-full text-center py-2 hover:text-green-500"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="flex items-center justify-center gap-1">
@@ -130,7 +130,7 @@ const Header: React.FC<HeaderProps> = () => {
               )}
               <Link
                 href="/about"
-                className="text-4xl text-zinc-950 transition-colors w-full text-center py-12 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:mx-auto after:h-[1px] after:w-0 after:bg-zinc-950 after:transition-all hover:after:w-[200px]"
+                className="text-4xl text-white transition-colors w-full text-center py-12 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:mx-auto after:h-[1px] after:w-0 after:bg-white/10 after:transition-all hover:after:w-[200px]"
                 onClick={() => setIsMenuOpen(false)}
               >
                 ABOUT
@@ -138,7 +138,7 @@ const Header: React.FC<HeaderProps> = () => {
               {!user && (
                 <Link
                   href="/auth/signup"
-                  className="text-4xl px-6 py-4 my-8 border-2 border-zinc-950 relative text-zinc-950 transition-colors duration-300 hover:text-white overflow-hidden uppercase"
+                  className="text-4xl px-6 py-4 my-8 border-2 border-white/10 relative text-white transition-colors duration-300 hover:text-green-500 overflow-hidden uppercase"
                 >
                   <span className="relative z-10">Sign Up</span>
                   <div className="absolute inset-0 bg-zinc-950 -z-[1] transform scale-x-0 transition-transform duration-300 origin-left hover:scale-x-100" />

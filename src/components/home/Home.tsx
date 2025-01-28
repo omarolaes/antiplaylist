@@ -172,7 +172,7 @@ const HomePage: React.FC<HomePageProps> = ({ initialData }) => {
         }, timeoutDuration);
 
         const genreSlug = generateSlug(genreName);
-        router.replace(`?genre=${encodeURIComponent(genreSlug)}`, {
+        router.replace(`/genre/${encodeURIComponent(genreSlug)}`, {
           scroll: false,
         });
 
@@ -665,10 +665,10 @@ const HomePage: React.FC<HomePageProps> = ({ initialData }) => {
 
   const LoadingOverlay = useMemo(() => {
     const LoadingOverlayComponent = () => (
-      <div className="fixed inset-0 bg-white backdrop-blur-sm flex items-center justify-center z-50 w-full h-full">
+      <div className="fixed inset-0 bg-zinc-900 backdrop-blur-sm flex items-center justify-center z-50 w-full h-full">
         <div className="text-center space-y-4">
           <LoadingSpinner 
-            color={useYouTubeMode ? "#ef4444" : "#000000"} 
+            color={useYouTubeMode ? "#ef4444" : "#ffffff"} 
             size="lg" 
           />
         </div>
@@ -714,9 +714,8 @@ const HomePage: React.FC<HomePageProps> = ({ initialData }) => {
                 <TrackList 
                   songs={memoizedArtistSongs}
                   currentIndex={currentVideoIndex}
-                  onTrackSelect={(videoId, index) => {
+                  onTrackSelect={(videoId) => {
                     setCurrentVideoId(videoId);
-                    setCurrentVideoIndex(index);
                   }}
                   isLiked={isLiked}
                   onLike={onLike}
@@ -748,7 +747,7 @@ const HomePage: React.FC<HomePageProps> = ({ initialData }) => {
         )}
 
         <Footer 
-          availableGenres={availableGenres.map(g => g.name)}
+          availableGenres={availableGenres}
           genreSongsCount={genreSongsCount}
         />
         

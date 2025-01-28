@@ -1,5 +1,6 @@
 import React from "react";
 import { Metadata } from 'next'
+import Header from "@/components/home/Header";
 
 export const metadata: Metadata = {
   title: 'About | mentiras',
@@ -8,15 +9,16 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-zinc-900">
+    <Header />
       <div className="container mx-auto px-8 py-12 md:py-24" role="main">
         {/* Hero Section */}
         <div className="text-center mb-16 animate-fade-in">
-          <h1 className="text-4xl md:text-4xl font-medium text-zinc-950">
-            <span className="text-zinc-950">AntiPlaylist</span>
+          <h1 className="text-4xl md:text-4xl font-medium text-white">
+            <span className="text-white">AntiPlaylist</span>
             <span className="font-extrabold text-6xl translate-y-4 inline-block">*</span>
           </h1>
-          <p className="text-base text-zinc-950 max-w-md mx-auto pt-4 tracking-wide">
+            <p className="text-base text-white max-w-md mx-auto pt-4 tracking-wide">
             AI-powered journey through genres.
           </p>
         </div>
@@ -58,7 +60,7 @@ export default function AboutPage() {
           <a
             href="mailto:antiplaylist@humanzzz.com"
             aria-label="Contact Us via Email"
-            className="inline-block px-24 py-2 bg-white border-x border-zinc-950 hover:border-zinc-950 hover:scale-95 hover:border-x-4 text-zinc-950 text-xl font-medium transition-all"
+            className="inline-block px-24 py-2 bg-white/10 border-x border-white/10 hover:border-white/20 hover:scale-95 hover:border-x-4 text-white text-xl font-medium transition-all"
           >
             Contact Us
           </a>
@@ -78,10 +80,10 @@ const FeatureCard = ({
   title: string;
   description: React.ReactNode;
 }) => (
-  <div className="relative p-6 even:border-y odd:border-x border-zinc-950 text-right">
+  <div className="relative p-6 even:border-y odd:border-x border-white/10 text-right">
     <div className="flex items-center justify-end gap-3 mb-4">
-      <h3 className="text-6xl text-zinc-950">{title}</h3>
+      <h3 className="text-6xl text-white font-extrabold">{title}</h3>
     </div>
-    <p className="text-zinc-950 text-xl">{description}</p>
+    <p className="text-white text-xl">{description}</p>
   </div>
 );

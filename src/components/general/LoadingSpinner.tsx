@@ -7,7 +7,7 @@ interface LoadingSpinnerProps {
 }
 
 const LoadingSpinner: FC<LoadingSpinnerProps> = ({ 
-  color = 'black',
+  color = 'white',
   size = 'md',
   className = '' 
 }) => {

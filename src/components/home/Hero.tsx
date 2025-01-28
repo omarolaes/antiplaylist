@@ -3,6 +3,7 @@ import GenresMarquee from "./GenresMarquee";
 import { BsPlayFill } from "react-icons/bs";
 import BackgroundShaderScene from "./BackgroundShaderScene";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import { IoPlaySharp } from "react-icons/io5";
 
 interface HeroProps {
   handleStartClick: () => void;
@@ -39,58 +40,41 @@ const Hero: React.FC<HeroProps> = ({
   const isLoading = !showMarquee;
 
   return (
-    <div className="relative w-full h-screen md:h-[calc(100vh-90px)] flex flex-col items-center justify-center gap-2 py-12 md:py-24 overflow-hidden">
+    <div className="relative w-full flex flex-col items-center justify-center gap-2">
       <BackgroundShaderScene />
-      <div className="text-center w-full">
         {isLoading ? (
           <div className="flex items-center justify-center">
             <LoadingSpinner 
-              color={isPremium ? "#ef4444" : "#000000"} 
+              color={isPremium ? "#ef4444" : "#ffffff"} 
               size="lg" 
             />
           </div>
         ) : (
-          <div className="w-full relative">
-            <div className="mt-20 space-y-3 text-center w-full">
-              <div className="relative">
-                <GenresMarquee availableGenres={availableGenres} />
+          <div className="w-full h-[calc(100vh-100px)]">
+            <GenresMarquee availableGenres={availableGenres} />
+            <div className="space-y-3 text-center w-full">
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                 <button
                   onClick={handleStartClick}
                   disabled={!showMarquee}
                   aria-label="Start listening"
-                  className={`mx-auto group relative px-24 py-4 bg-white border-2 hover:bg-zinc-950 ${
+                  className={`mx-auto group relative px-8 py-8 border-2 rounded-sm bg-zinc-950 ${
                     isPremium
                       ? "border-red-500 hover:border-red-500 text-red-500"
-                      : "border-zinc-950 hover:border-zinc-950 text-zinc-950 hover:text-white"
-                  } hover:scale-95 hover:border-x-4 flex items-center gap-3 text-3xl font-medium transition-all disabled:opacity-50 animate-fade-in opacity-0`}
+                      : "border-zinc-950 text-white"
+                  } hover:scale-110 flex items-center gap-3 text-3xl font-semibold uppercase transition-all disabled:opacity-50 animate-fade-in opacity-0`}
                   style={{ animationDelay: "0.25s" }}
                 >
-                  <span>Listen</span>
-                  <BsPlayFill
-                    className={`w-10 h-10 group-hover:translate-x-1 group-hover:scale-110 transition-transform ${
-                      isPremium ? "text-red-500" : "text-zinc-950 group-hover:text-white"
+                  <IoPlaySharp
+                    className={`w-20 h-20 group-hover:scale-50 transition-transform ${
+                      isPremium ? "text-red-500" : "text-white"
                     }`}
                   />
                 </button>
               </div>
-                <div className="pt-8 flex justify-center animate-fade-in opacity-0" style={{ animationDelay: "0.5s" }}>
-                  <a 
-                    href="https://www.producthunt.com/posts/antiplaylist?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-antiplaylist" 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img 
-                      src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=679302&theme=light" 
-                      alt="AntiPlaylist - AI curated random radio | Product Hunt"
-                      width="250"
-                      height="54"
-                    />
-                  </a>
-                </div>
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 };

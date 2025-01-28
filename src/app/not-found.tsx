@@ -19,7 +19,7 @@ export default function NotFound() {
     <div className="flex flex-col items-center justify-center min-h-screen">
       <h2 className="text-2xl font-bold mb-4">Page Not Found</h2>
       <p className="mb-4">Could not find the requested page</p>
-      <p className="mb-4 text-gray-600">Redirecting to home page in 3 seconds...</p>
+      <p className="mb-4 text-zinc-600">Redirecting to home page in 3 seconds...</p>
       <Link 
         href="/" 
         className="text-blue-500 hover:text-blue-700 underline"

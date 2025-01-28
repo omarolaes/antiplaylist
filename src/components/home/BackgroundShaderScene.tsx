@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 
-const chars = '░▒▓'.split('')
-const numLines = 100
+const chars = '░'.split('')
+const numLines = 80
 const numCharsPerLine = 50
 
 declare global {
@@ -61,13 +61,13 @@ export default function BackgroundShaderScene() {
         // Use the stored drawing dimensions instead of getBoundingClientRect
         const centerX = canvas.drawWidth / 2
         const centerY = canvas.drawHeight / 2
-        const radius = Math.min(canvas.drawWidth, canvas.drawHeight) * 0.8
+        const radius = Math.min(canvas.drawWidth, canvas.drawHeight) * 0.5
 
         // Clear the entire canvas using the scaled dimensions
         ctx.clearRect(0, 0, canvas.drawWidth, canvas.drawHeight)
-        const maxDistance = radius * 0.6
+        const maxDistance = radius * 0.5
 
-        ctx.font = '28px monospace'
+        ctx.font = '8px monospace'
         ctx.textAlign = 'center'
         
         linesRef.current.forEach((line, i) => {
@@ -78,10 +78,10 @@ export default function BackgroundShaderScene() {
 
           line.chars.forEach((char, j) => {
             const t = j / numCharsPerLine
-            const waveAmplitude = 35 * (1 - t * 0.8)
+            const waveAmplitude = 10 * (1 - t * 0.8)
             
             const tentacleOffset = Math.sin(t * 20 + timeRef.current * 1 + i) * 
-                                  (radius * 0.15) * t * tentacleWave
+                                  (radius * 0.1) * t * tentacleWave
             const sineOffset = Math.sin(t * 5 + timeRef.current * 0.5 + i * 0.5) * 
                               waveAmplitude
 
@@ -96,7 +96,7 @@ export default function BackgroundShaderScene() {
             const distance = Math.hypot(x - centerX, y - centerY)
             const opacity = Math.max(0.1, 1 - (distance / maxDistance))
             
-            ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`
             ctx.fillText(char, x, y)
           })
         })
@@ -128,11 +128,11 @@ export default function BackgroundShaderScene() {
   }, [])
 
   return (
-    <div className="animate-shader-appear absolute top-1/2 left-1/2 w-full h-full">
+    <div className="animate-shader-appear absolute top-1/2 left-1/2 w-full h-screen">
       <canvas 
         ref={canvasRef}
         aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full z-0 bg-white"
+        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-screen z-0"
       />
     </div>
   )

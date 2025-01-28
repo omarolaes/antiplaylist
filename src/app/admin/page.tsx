@@ -51,7 +51,7 @@ export default function AdminPage() {
   };
 
   const handleVideoSelect = (videoId: string, genreName: string) => {
-    router.push(`/?genre=${encodeURIComponent(genreName)}`);
+    router.push(`/genre/${encodeURIComponent(genreName)}`);
   };
 
   if (!isAuthenticated) {

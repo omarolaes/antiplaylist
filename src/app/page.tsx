@@ -97,11 +97,11 @@ export default async function Home() {
   const initialData = await getInitialData();
 
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen w-full bg-zinc-900">
       <Suspense fallback={
-        <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
-            <LoadingSpinner color="#000000" size="lg" />
+            <LoadingSpinner color="#ffffff" size="lg" />
           </div>
         </div>
       }>

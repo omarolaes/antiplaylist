@@ -18,6 +18,26 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "AntiPlaylist - Random Educational Radio",
   description: "Random educational online radio station. Listen to all kinds of genres with youtube links.",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.ico",
+        sizes: "any",
+      },
+      {
+        url: "/icon.png",
+        type: "image/png",
+        sizes: "32x32",
+      },
+    ],
+    apple: [
+      {
+        url: "/apple-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 export const viewport = {
@@ -34,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-900`}
       >
         <AuthProvider>
           {children}
