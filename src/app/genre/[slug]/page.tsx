@@ -46,12 +46,16 @@ const getGenreData = unstable_cache(
   }
 );
 
+// Update the Props interface to match Next.js 14+ typing
 type Props = {
-  params: { slug: string };
+  params: {
+    slug: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export async function generateMetadata(
-  { params = { slug: "" } }: Props
+  { params, searchParams: _searchParams }: Props
 ): Promise<Metadata> {
   const data = await getGenreData(params.slug);
 
@@ -80,7 +84,8 @@ export async function generateMetadata(
   };
 }
 
-const GenrePage = async ({ params = { slug: "" } }: Props) => {
+// Update the page component props
+const GenrePage = async ({ params, searchParams: _searchParams }: Props) => {
   const data = await getGenreData(params.slug);
 
   if (!data) {
