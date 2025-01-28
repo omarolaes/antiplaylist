@@ -47,9 +47,8 @@ const getGenreData = unstable_cache(
 );
 
 type Props = {
-  params: {
-    slug: string
-  }
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export async function generateMetadata(

@@ -2,7 +2,6 @@ import Link from 'next/link';
 
 export interface FooterProps {
   availableGenres?: { name: string; slug: string }[];
-  genreSongsCount?: number;
 }
 
 const QUICK_LINKS = [
@@ -10,7 +9,7 @@ const QUICK_LINKS = [
   { href: '/privacy', label: 'Privacy Policy' },
 ];
 
-export default function Footer({ availableGenres = [], genreSongsCount = 0 }: FooterProps) {
+export default function Footer({ availableGenres = [] }: FooterProps) {
   return (
     <footer className="bg-zinc-950/50 backdrop-blur-lg border-t border-white/5">
       <div className="container mx-auto px-4 py-6">
