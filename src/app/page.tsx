@@ -1,43 +1,7 @@
 import { Suspense } from "react";
 import HomePage from "@/components/home/Home";
 import type { Metadata, Viewport } from "next";
-import { supabase } from "@/lib/supabase";
-import { unstable_cache } from "next/cache";
-import LoadingSpinner from "@/components/general/LoadingSpinner";
-
-// Cache the data fetching with Next.js built-in cache
-const getInitialData = unstable_cache(
-  async () => {
-    try {
-      const [genresResponse, songsCountResponse] = await Promise.all([
-        supabase.from("genres").select("name, slug"),
-        supabase.from("genre_songs").select("*", { count: "exact", head: true }),
-      ]);
-
-      if (genresResponse.error || songsCountResponse.error) {
-        console.error("Supabase error:", genresResponse.error || songsCountResponse.error);
-        return { genres: [], songsCount: 0 };
-      }
-
-      if (!genresResponse.data || !songsCountResponse.count) {
-        return { genres: [], songsCount: 0 };
-      }
-
-      return {
-        genres: genresResponse.data.map(({ name, slug }) => ({ name, slug })),
-        songsCount: songsCountResponse.count,
-      };
-    } catch (error) {
-      console.error("Failed to fetch initial data:", error);
-      return { genres: [], songsCount: 0 };
-    }
-  },
-  ["initial-data"],
-  {
-    revalidate: 86400, // 24 hours
-    tags: ["genres", "songs"],
-  }
-);
+import LoadingSpinner from "@/components/general/LoadingSpinner"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -94,7 +58,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const initialData = await getInitialData();
 
   return (
     <div className="min-h-screen w-full bg-zinc-900">
@@ -105,7 +68,7 @@ export default async function Home() {
           </div>
         </div>
       }>
-      <HomePage initialData={initialData} />
+      <HomePage />
       </Suspense>
     </div>
   );

@@ -6,12 +6,6 @@ import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import GenreContent from "@/components/genre/GenreContent";
 
-interface GenrePageProps {
-  params: {
-    slug: string;
-  };
-}
-
 // Cache the genre data fetching
 const getGenreData = unstable_cache(
   async (slug: string) => {
@@ -52,8 +46,13 @@ const getGenreData = unstable_cache(
   }
 );
 
+type Props = {
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
 export async function generateMetadata(
-  { params }: GenrePageProps
+  { params }: Props
 ): Promise<Metadata> {
   const data = await getGenreData(params.slug);
 
@@ -82,7 +81,7 @@ export async function generateMetadata(
   };
 }
 
-export default async function GenrePage({ params }: GenrePageProps) {
+export default async function GenrePage({ params }: Props) {
   const data = await getGenreData(params.slug);
 
   if (!data) {
@@ -103,7 +102,6 @@ export default async function GenrePage({ params }: GenrePageProps) {
         <GenreContent 
           genre={data.genre} 
           songs={data.songs} 
-          availableGenres={data.availableGenres}
         />
       </Suspense>
     </div>

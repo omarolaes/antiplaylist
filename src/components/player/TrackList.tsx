@@ -1,9 +1,4 @@
 import React from 'react';
-import { BsChevronRight } from 'react-icons/bs';
-import { TiHeartFullOutline } from "react-icons/ti";
-import { TbMusicPlus } from "react-icons/tb";
-import { useEffect, useState } from 'react';
-import { IoTrashSharp } from 'react-icons/io5';
 
 interface TrackListProps {
   songs: Array<{
@@ -20,11 +15,6 @@ interface TrackListProps {
 }
 
 const TrackList: React.FC<TrackListProps> = ({ songs, currentIndex, onTrackSelect }) => {
-  const [isLocalhost, setIsLocalhost] = useState(false);
-
-  useEffect(() => {
-    setIsLocalhost(window.location.hostname === 'localhost');
-  }, []);
 
   if (songs.length === 0) return null;
 
@@ -45,6 +35,7 @@ const TrackList: React.FC<TrackListProps> = ({ songs, currentIndex, onTrackSelec
             <div className="flex flex-col">
               <span className="font-medium">{song.song}</span>
               <span className="text-sm text-zinc-400">{song.artist}</span>
+
             </div>
           </button>
         ))}

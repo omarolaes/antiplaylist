@@ -8,11 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { BsHeart } from "react-icons/bs";
 import { supabase } from "@/lib/supabase";
 
-interface HeaderProps {
-  // setUseYouTubeMode prop removed
-}
-
-const Header: React.FC<HeaderProps> = () => {
+const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);

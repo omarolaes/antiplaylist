@@ -5,12 +5,12 @@ export async function GET() {
   try {
     const { data, error } = await supabase
       .from('genres')
-      .select('name')
+      .select('name, slug')
       .order('name');
     
     if (error) throw error;
     
-    const genres = data?.map(({ name }) => name) ?? [];
+    const genres = data?.map(({ name, slug }) => ({ name, slug })) ?? [];
     return NextResponse.json({ genres });
     
   } catch (error) {

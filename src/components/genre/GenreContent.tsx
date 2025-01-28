@@ -26,10 +26,9 @@ interface Song {
 interface GenreContentProps {
   genre: Genre;
   songs: Song[];
-  availableGenres: Array<{ name: string; slug: string; }>;
 }
 
-export default function GenreContent({ genre, songs, availableGenres }: GenreContentProps) {
+export default function GenreContent({ genre, songs }: GenreContentProps) {
   const router = useRouter();
   const [currentVideoId, setCurrentVideoId] = useState<string>(
     songs[0]?.video_id || ""
@@ -45,12 +44,16 @@ export default function GenreContent({ genre, songs, availableGenres }: GenreCon
     setCurrentVideoId(songs[nextIndex].video_id);
   };
 
-  const handleNextGenre = () => {
-    // Filter out current genre and get a random one from remaining
-    const otherGenres = availableGenres.filter(g => g.slug !== genre.slug);
-    if (otherGenres.length > 0) {
-      const randomGenre = otherGenres[Math.floor(Math.random() * otherGenres.length)];
-      router.push(`/genre/${randomGenre.slug}`);
+  const handleNextGenre = async () => {
+    try {
+      const response = await fetch('/api/random-genre');
+      const data = await response.json();
+      
+      if (data.genre?.slug) {
+        router.push(`/genre/${data.genre.slug}`);
+      }
+    } catch (error) {
+      console.error('Failed to fetch random genre:', error);
     }
   };
 

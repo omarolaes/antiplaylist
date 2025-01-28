@@ -43,15 +43,15 @@ export default function PrivacyPage() {
                 This project interfaces with YouTube and Perplexity AI services. Your use of these services through our platform is subject to their respective terms of service and privacy policies:
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>YouTube's Terms of Service and Privacy Policy</li>
-                <li>Perplexity AI's Terms of Service and Privacy Policy</li>
+                <li>YouTube&apos;s Terms of Service and Privacy Policy</li>
+                <li>Perplexity AI&apos;s Terms of Service and Privacy Policy</li>
               </ul>
             </section>
 
             <section className="space-y-4">
               <h2 className="text-2xl font-semibold text-white">Disclaimer</h2>
               <p>
-                This is an experimental art project and is provided "as is" without any warranties. We are not responsible for any content retrieved from third-party services. All content rights belong to their respective owners.
+                This is an experimental art project and is provided &quot;as is&quot; without any warranties. We are not responsible for any content retrieved from third-party services. All content rights belong to their respective owners.
               </p>
             </section>
 
