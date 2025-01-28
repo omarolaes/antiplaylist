@@ -47,8 +47,10 @@ const getGenreData = unstable_cache(
 );
 
 type Props = {
-  params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: {
+    slug: string
+  }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
 export async function generateMetadata(
@@ -81,7 +83,7 @@ export async function generateMetadata(
   };
 }
 
-export default async function GenrePage({ params }: Props) {
+const GenrePage = async ({ params, searchParams }: Props) => {
   const data = await getGenreData(params.slug);
 
   if (!data) {
@@ -106,4 +108,6 @@ export default async function GenrePage({ params }: Props) {
       </Suspense>
     </div>
   );
-} 
+}
+
+export default GenrePage; 
