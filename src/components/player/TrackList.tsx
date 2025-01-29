@@ -24,7 +24,7 @@ const TrackList: React.FC<TrackListProps> = ({ songs, currentIndex, onTrackSelec
       <div className="space-y-2">
         {songs.map((song, index) => (
           <button
-            key={song.videoId}
+            key={`${song.videoId}-${index}`}
             onClick={() => onTrackSelect(song.videoId, index)}
             className={`w-full text-left p-4 rounded-lg transition-all ${
               currentIndex === index

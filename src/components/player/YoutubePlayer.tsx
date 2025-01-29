@@ -8,6 +8,8 @@ interface YouTubePlayer {
   getVideoData: () => { video_id?: string };
   playVideo: () => void;
   unMute: () => void;
+  mute: () => void;
+  getPlayerState: () => number;
 }
 
 interface YouTubeEvent {
@@ -20,6 +22,9 @@ interface YouTubeWindow extends Window {
     PlayerState: {
       PLAYING: number;
       ENDED: number;
+      PAUSED: number;
+      BUFFERING: number;
+      CUED: number;
     };
   };
   onYouTubeIframeAPIReady: () => void;
@@ -55,6 +60,8 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
   const playerRef = useRef<YouTubePlayer | null>(null);
   const [hasError, setHasError] = useState(false);
   const [isAPIReady, setIsAPIReady] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const playerId = useRef(`youtube-player-${videoId}`);
 
   const destroyPlayer = useCallback(() => {
     if (playerRef.current) {
@@ -67,11 +74,48 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
     }
   }, []);
 
+  const attemptAutoplay = useCallback(async (player: YouTubePlayer) => {
+    try {
+      // Start muted first (more likely to be allowed by browser)
+      player.mute();
+      await player.playVideo();
+      
+      // Check if video actually started playing
+      const checkPlayingInterval = setInterval(() => {
+        if (!player) {
+          clearInterval(checkPlayingInterval);
+          return;
+        }
+
+        try {
+          const state = player.getPlayerState();
+          const YT = (window as unknown as YouTubeWindow).YT;
+          
+          if (state === YT.PlayerState.PLAYING) {
+            // If we got here, autoplay worked - now try unmuting
+            player.unMute();
+            clearInterval(checkPlayingInterval);
+          } else if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.CUED) {
+            // Video is paused or cued but not playing - likely blocked by autoplay policy
+            clearInterval(checkPlayingInterval);
+          }
+        } catch (e) {
+          clearInterval(checkPlayingInterval);
+        }
+      }, 250);
+
+      // Clear interval after 5 seconds to prevent memory leaks
+      setTimeout(() => clearInterval(checkPlayingInterval), 5000);
+    } catch (e) {
+      console.warn("Autoplay failed:", e);
+    }
+  }, []);
+
   const createPlayer = useCallback(() => {
     if (!videoId || !isAPIReady) return;
     setHasError(false);
 
-    const container = document.getElementById("youtube-player");
+    const container = document.getElementById(playerId.current);
     if (!container) {
       setHasError(true);
       return;
@@ -84,7 +128,7 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
         return;
       }
 
-      playerRef.current = new YT.Player("youtube-player", {
+      playerRef.current = new YT.Player(playerId.current, {
         height: "100%",
         width: "100%",
         videoId: videoId,
@@ -100,12 +144,7 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
         events: {
           onReady: (event: { target: YouTubePlayer }) => {
             console.log("Player ready");
-            try {
-              event.target.unMute();
-              event.target.playVideo();
-            } catch (e) {
-              console.warn("Error unmuting player:", e);
-            }
+            attemptAutoplay(event.target);
           },
           onStateChange: (event: YouTubeEvent) => {
             const YT = (window as unknown as YouTubeWindow).YT;
@@ -123,7 +162,7 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
       console.error("Error creating YouTube player:", error);
       setHasError(true);
     }
-  }, [videoId, onVideoEnd, isAPIReady]);
+  }, [videoId, onVideoEnd, isAPIReady, attemptAutoplay]);
 
   useEffect(() => {
     if (!isAPIReady) return;
@@ -172,8 +211,11 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
 
   return (
     <div className="relative mb-2">
-      <div className="aspect-video overflow-hidden bg-zinc-950/95 rounded-lg backdrop-blur-sm">
-        <div id="youtube-player" className="w-full h-full" />
+      <div 
+        className="aspect-video overflow-hidden bg-zinc-950/95 rounded-lg backdrop-blur-sm"
+        onClick={() => setHasUserInteracted(true)}
+      >
+        <div id={playerId.current} className="w-full h-full" />
       </div>
     </div>
   );

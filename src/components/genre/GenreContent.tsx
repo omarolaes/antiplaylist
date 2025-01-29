@@ -39,28 +39,30 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
   };
 
   const handleVideoEnd = () => {
-    const currentIndex = songs.findIndex(song => song.video_id === currentVideoId);
+    const currentIndex = songs.findIndex(
+      (song) => song.video_id === currentVideoId
+    );
     const nextIndex = (currentIndex + 1) % songs.length;
     setCurrentVideoId(songs[nextIndex].video_id);
   };
 
   const handleNextGenre = async () => {
     try {
-      const response = await fetch('/api/random-genre');
+      const response = await fetch("/api/random-genre");
       const data = await response.json();
-      
+
       if (data.genre?.slug) {
         router.push(`/genre/${data.genre.slug}`);
       }
     } catch (error) {
-      console.error('Failed to fetch random genre:', error);
+      console.error("Failed to fetch random genre:", error);
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      
+
       <main className="flex-grow max-w-7xl mx-auto py-8">
         <div className="mx-auto">
           <div className="mb-8">
@@ -86,8 +88,8 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="aspect-video w-full bg-zinc-800 rounded-lg overflow-hidden">
-                <YoutubePlayer 
-                  videoId={currentVideoId} 
+                <YoutubePlayer
+                  videoId={currentVideoId}
                   onVideoEnd={handleVideoEnd}
                 />
               </div>
@@ -100,15 +102,16 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
                   song: song.song,
                   videoId: song.video_id,
                 }))}
-                currentIndex={songs.findIndex(song => song.video_id === currentVideoId)}
+                currentIndex={songs.findIndex(
+                  (song) => song.video_id === currentVideoId
+                )}
                 onTrackSelect={handleTrackSelect}
               />
             </div>
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
-} 
+}

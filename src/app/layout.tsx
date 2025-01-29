@@ -17,7 +17,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "AntiPlaylist - Random Educational Radio",
-  description: "Random educational online radio station. Listen to all kinds of genres with youtube links.",
+  description:
+    "Random educational online radio station. Listen to all kinds of genres with youtube links.",
   icons: {
     icon: [
       {
@@ -56,9 +57,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-900`}
       >
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
         <Analytics />
       </body>
     </html>

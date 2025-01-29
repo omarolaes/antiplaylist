@@ -23,7 +23,7 @@ const GenresMarquee: React.FC = () => {
 
   return (
     <div 
-      className="flex flex-wrap gap-0 items-center h-full justify-around px-2 animate-fade-in opacity-0 mx-auto"
+      className="flex flex-wrap gap-0 items-center h-auto justify-around px-2 animate-fade-in opacity-0 mx-auto"
       style={{ 
         animationDelay: "0.5s", 
         animationDuration: "1s" 
@@ -33,7 +33,7 @@ const GenresMarquee: React.FC = () => {
         <a
           key={`${genre.name}-${index}`}
           href={`/genre/${genre.slug}`}
-          className="text-[10px] p-1 leading-tight whitespace-nowrap tracking-tight text-zinc-700 hover:text-zinc-300 hover:scale-110 transition-all duration-100"
+          className="text-4xl p-1 leading-tight whitespace-nowrap tracking-tight text-zinc-700 hover:text-zinc-300 hover:scale-110 transition-all duration-100"
         >
           {genre.name}
         </a>

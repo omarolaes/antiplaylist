@@ -9,70 +9,67 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-zinc-900">
-    <Header />
-      <div className="container mx-auto px-8 py-12 md:py-24" role="main">
+    <div className="min-h-screen bg-black">
+      <Header />
+      <div className="container mx-auto px-4 py-16 md:py-24" role="main">
         {/* Hero Section */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="text-4xl md:text-4xl font-medium text-white">
-            <span className="text-white">AntiPlaylist</span>
-            <span className="font-extrabold text-6xl translate-y-4 inline-block">*</span>
+        <div className="text-center mb-20 animate-fade-in">
+          <h1 className="text-6xl md:text-7xl font-bold text-rose-100">
+            AntiPlaylist
+            <span className="font-black text-rose-200 text-7xl translate-y-4 inline-block ml-2">*</span>
           </h1>
-            <p className="text-base text-white max-w-md mx-auto pt-4 tracking-wide">
-            AI-powered journey through genres.
+          <p className="text-lg text-rose-200/80 max-w-xl mx-auto mt-6 leading-relaxed">
+            An art project exploring music without algorithms. Pure random discovery.
           </p>
         </div>
 
-        {/* Features Grid - Ensure full width and proper alignment */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16 w-full">
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-24 max-w-4xl mx-auto">
           <FeatureCard
-            title="Free"
-            description="Until the server runs out."
+            title="No Algorithms"
+            description="Pure random discovery. No taste prediction, no recommendations, just music."
           />
           <FeatureCard
-            title="Learn"
-            description="Continue listening by learning."
+            title="Learn & Explore"
+            description="Each skip teaches you something new about music genres and artists."
           />
           <FeatureCard
-            title="Curated"
-            description="Discovery and refinement by AI."
+            title="Free Access"
+            description="We'll try to keep it free as long as possible. Art should be accessible."
           />
           <FeatureCard
-            title="Favorites"
-            description="Save tracks"
-          />
-          <FeatureCard
-            title=".random()"
-            description="No complex algorithms."
-          />
-          <FeatureCard
-            title="Mexico"
+            title="Made in México"
             description={
               <>
-                Created by <a href="https://twitter.com/omarolaes" className="underline hover:text-zinc-600">@omarolaes</a>
+                Created with ♥️ by <a href="https://twitter.com/omarolaes" className="text-rose-200 hover:text-rose-100 underline">@omarolaes</a>
               </>
             }
           />
         </div>
 
-        {/* Contact Section - Updated button styling with animation */}
-        <div className="mt-32 mb-64 mx-auto text-center animate-fade-in">
-          <a
-            href="mailto:antiplaylist@humanzzz.com"
-            aria-label="Contact Us via Email"
-            className="inline-block px-24 py-2 bg-white/10 border-x border-white/10 hover:border-white/20 hover:scale-95 hover:border-x-4 text-white text-xl font-medium transition-all"
-          >
-            Contact Us
-          </a>
+        {/* Collaboration Section */}
+        <div className="text-center mb-32">
+          <h2 className="text-2xl font-bold text-rose-100 mb-6">Want to Collaborate?</h2>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a
+              href="https://twitter.com/omarolaes"
+              className="px-8 py-3 bg-rose-100/10 hover:bg-rose-100/20 border border-rose-200/20 rounded-full text-rose-100 transition-all"
+            >
+              DM on Twitter
+            </a>
+            <a
+              href="mailto:antiplaylist@humanzzz.com"
+              className="px-8 py-3 bg-rose-100/10 hover:bg-rose-100/20 border border-rose-200/20 rounded-full text-rose-100 transition-all"
+            >
+              Send Email
+            </a>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-{
-  /* FeatureCard Component - Updated styling */
-}
 const FeatureCard = ({
   title,
   description,
@@ -80,10 +77,8 @@ const FeatureCard = ({
   title: string;
   description: React.ReactNode;
 }) => (
-  <div className="relative p-6 even:border-y odd:border-x border-white/10 text-right">
-    <div className="flex items-center justify-end gap-3 mb-4">
-      <h3 className="text-6xl text-white font-extrabold">{title}</h3>
-    </div>
-    <p className="text-white text-xl">{description}</p>
+  <div className="p-6 rounded-xl bg-rose-100/5 hover:bg-rose-100/10 transition-all border border-rose-200/10 hover:border-rose-200/20">
+    <h3 className="text-2xl font-bold text-rose-100 mb-3">{title}</h3>
+    <p className="text-rose-200/80 leading-relaxed">{description}</p>
   </div>
 );

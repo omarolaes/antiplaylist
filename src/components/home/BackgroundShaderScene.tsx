@@ -18,6 +18,7 @@ export default function BackgroundShaderScene() {
   const timeRef = useRef(0)
   const lastTimeRef = useRef(0)
   const linesRef = useRef<Array<{ chars: string[], angle: number, offset: number }>>([])
+  const resizeObserverRef = useRef<ResizeObserver | null>(null)
   
   useEffect(() => {
     const canvas = canvasRef.current
@@ -48,7 +49,21 @@ export default function BackgroundShaderScene() {
       // Store the actual drawing dimensions
       canvas.drawWidth = rect.width
       canvas.drawHeight = rect.height
+
+      // Reset the font after resize since context gets reset
+      ctx.font = '8px monospace'
+      ctx.textAlign = 'center'
     }
+
+    // Create a resize observer for more reliable size updates
+    resizeObserverRef.current = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        setupCanvas()
+      }
+    })
+
+    // Observe the canvas element
+    resizeObserverRef.current.observe(canvas)
 
     const animate = (time: number) => {
       try {
@@ -61,11 +76,11 @@ export default function BackgroundShaderScene() {
         // Use the stored drawing dimensions instead of getBoundingClientRect
         const centerX = canvas.drawWidth / 2
         const centerY = canvas.drawHeight / 2
-        const radius = Math.min(canvas.drawWidth, canvas.drawHeight) * 0.5
+        const radius = Math.min(canvas.drawWidth, canvas.drawHeight) * 0.8
 
         // Clear the entire canvas using the scaled dimensions
         ctx.clearRect(0, 0, canvas.drawWidth, canvas.drawHeight)
-        const maxDistance = radius * 0.5
+        const maxDistance = radius * 0.8
 
         ctx.font = '8px monospace'
         ctx.textAlign = 'center'
@@ -124,15 +139,16 @@ export default function BackgroundShaderScene() {
     return () => {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', setupCanvas)
+      resizeObserverRef.current?.disconnect()
     }
   }, [])
 
   return (
-    <div className="animate-shader-appear absolute top-1/2 left-1/2 w-full h-screen">
+    <div className="absolute inset-0 w-full h-full overflow-hidden">
       <canvas 
         ref={canvasRef}
         aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-screen z-0"
+        className="pointer-events-none absolute inset-0 w-full h-full z-0"
       />
     </div>
   )
