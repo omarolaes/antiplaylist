@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mainGenres } from "../../../data/genres/genresList";
 
 interface Song {
@@ -11,16 +11,21 @@ interface Song {
 
 interface TestResult {
   success: boolean;
-  data?: string | Song[];
+  data?: string | Song[] | { 
+    description: string; 
+    imageUrl: string 
+  };
   error?: string;
 }
 
 export default function GenreGenerationTester() {
   const [selectedGenre, setSelectedGenre] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [availableGenres, setAvailableGenres] = useState<string[]>([]);
   const [results, setResults] = useState<{
     description?: TestResult;
     songs?: TestResult;
+    image?: TestResult;
   }>({});
 
   // Get all available genres with deduplication
@@ -36,6 +41,27 @@ export default function GenreGenerationTester() {
       return acc;
     }, [])
   )).sort();
+
+  // Fetch available genres on component mount
+  useEffect(() => {
+    const fetchAvailableGenres = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/get-unprocessed-genres");
+        const data = await response.json();
+        
+        if (!response.ok) throw new Error(data.error || "Failed to fetch genres");
+        
+        setAvailableGenres(data.genres);
+      } catch (error) {
+        console.error("Error fetching available genres:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAvailableGenres();
+  }, []);
 
   const testDescription = async () => {
     setIsLoading(true);
@@ -56,7 +82,10 @@ export default function GenreGenerationTester() {
         ...prev,
         description: {
           success: true,
-          data: data.description
+          data: {
+            description: data.description,
+            imageUrl: data.imageUrl
+          }
         }
       }));
     } catch (error) {
@@ -107,13 +136,64 @@ export default function GenreGenerationTester() {
     }
   };
 
+  const testImage = async () => {
+    if (!results.description?.success || !results.description.data) {
+      alert("Please generate a description first");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const description = typeof results.description.data === 'string' 
+        ? results.description.data 
+        : 'description' in results.description.data 
+          ? (results.description.data as { description: string }).description
+          : '';
+
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          genre: selectedGenre,
+          description: description
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error || "Failed to generate image");
+      
+      setResults(prev => ({
+        ...prev,
+        image: {
+          success: true,
+          data: data.imageUrl
+        }
+      }));
+    } catch (error) {
+      setResults(prev => ({
+        ...prev,
+        image: {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error"
+        }
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold mb-4">Genre Generation Tester</h1>
       
       {/* Genre Selection */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium">Select Genre</label>
+        <label className="block text-sm font-medium">
+          Select Unprocessed Genre ({availableGenres.length} remaining)
+        </label>
         <select
           value={selectedGenre}
           onChange={(e) => setSelectedGenre(e.target.value)}
@@ -121,8 +201,8 @@ export default function GenreGenerationTester() {
           disabled={isLoading}
         >
           <option value="">Select a genre...</option>
-          {allGenres.map((genre, index) => (
-            <option key={`${genre}-${index}`} value={genre}>
+          {availableGenres.map((genre) => (
+            <option key={genre} value={genre}>
               {genre}
             </option>
           ))}
@@ -146,6 +226,14 @@ export default function GenreGenerationTester() {
         >
           {isLoading ? "Testing..." : "Test Song Generation"}
         </button>
+
+        <button
+          onClick={testImage}
+          disabled={!selectedGenre || isLoading || !results.description?.success}
+          className="px-4 py-2 bg-purple-600 text-white rounded-md disabled:opacity-50"
+        >
+          {isLoading ? "Testing..." : "Test Image Generation"}
+        </button>
       </div>
 
       {/* Results Display */}
@@ -155,7 +243,27 @@ export default function GenreGenerationTester() {
           <div className="p-4 border rounded-md">
             <h2 className="text-lg font-semibold mb-2">Description Results</h2>
             {results.description.success ? (
-              <p className="text-green-500">{results.description.data as string}</p>
+              <div className="space-y-4">
+                <p className="text-green-500">
+                  {typeof results.description.data === 'string' 
+                    ? results.description.data 
+                    : Array.isArray(results.description.data)
+                      ? ''
+                      : results.description.data?.description}
+                </p>
+                {typeof results.description.data !== 'string' && 
+                 !Array.isArray(results.description.data) && 
+                 results.description.data?.imageUrl && (
+                  <div className="mt-4">
+                    <h3 className="text-md font-medium mb-2">Generated Image</h3>
+                    <img 
+                      src={results.description.data.imageUrl} 
+                      alt={`Generated image for ${selectedGenre}`}
+                      className="w-full max-w-md rounded-lg shadow-lg"
+                    />
+                  </div>
+                )}
+              </div>
             ) : (
               <p className="text-red-500">Error: {results.description.error}</p>
             )}
@@ -183,6 +291,24 @@ export default function GenreGenerationTester() {
               </div>
             ) : (
               <p className="text-red-500">Error: {results.songs.error}</p>
+            )}
+          </div>
+        )}
+
+        {/* Image Results */}
+        {results.image && (
+          <div className="p-4 border rounded-md">
+            <h2 className="text-lg font-semibold mb-2">Image Results</h2>
+            {results.image.success ? (
+              <div className="space-y-4">
+                <img 
+                  src={results.image.data as string} 
+                  alt={`Generated image for ${selectedGenre}`}
+                  className="w-full max-w-md rounded-lg shadow-lg"
+                />
+              </div>
+            ) : (
+              <p className="text-red-500">Error: {results.image.error}</p>
             )}
           </div>
         )}

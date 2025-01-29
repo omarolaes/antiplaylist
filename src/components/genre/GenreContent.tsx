@@ -13,6 +13,7 @@ interface Genre {
   name: string;
   slug: string;
   description?: string;
+  cover_image?: string;
 }
 
 interface Song {
@@ -66,13 +67,22 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
       <main className="flex-grow max-w-7xl mx-auto py-8">
         <div className="mx-auto">
           <div className="mb-8">
-            <div className="grid grid-cols-1 lg:grid-cols-6 items-center justify-between gap-8">
-              <div className="col-span-4">
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-6 items-start justify-between gap-8">
+              <div className="col-span-4 space-y-4">
+                <h1 className="text-4xl md:text-5xl font-bold text-white">
                   {genre.name}
                 </h1>
                 {genre.description && (
                   <p className="text-zinc-300 text-lg">{genre.description}</p>
+                )}
+                {genre.cover_image && (
+                  <div className="aspect-square w-full max-w-md rounded-lg overflow-hidden">
+                    <img 
+                      src={genre.cover_image} 
+                      alt={`${genre.name} cover art`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 )}
               </div>
               <button

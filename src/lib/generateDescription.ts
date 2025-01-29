@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { ParentGenreInfo } from "./generateSongs";
+import { generateImage } from "@/lib/generateImage";
 
 export async function generateDescription(genre: string, parentInfo?: ParentGenreInfo) {
   try {
@@ -143,13 +144,31 @@ YOUR TASK - Craft a single, historically precise sentence under 250 characters t
       }
     }
 
+    // Generate image using the description
+    try {
+      const imageUrl = await generateImage(genre, description);
+      
+      // Update genre in database with both description and image
+      const { error: updateError } = await supabase
+        .from("genres")
+        .update({ 
+          description,
+          cover_image: imageUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq("slug", genre.toLowerCase());
+
+      if (updateError) {
+        console.error("Error updating genre:", updateError);
+      }
+    } catch (imageError) {
+      console.error("Error generating image:", imageError);
+      // Continue with the process even if image generation fails
+    }
+
     return description;
   } catch (error) {
-    console.error("Error generating description:", error);
-    // Add error classification
-    if (error instanceof Error) {
-      throw new Error(`Description generation failed: ${error.message}`);
-    }
-    throw new Error('Unknown error occurred during description generation');
+    console.error("Error in generateDescription:", error);
+    throw error;
   }
 } 
