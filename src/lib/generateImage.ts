@@ -30,15 +30,23 @@ export async function generateImage(genre: string, description: string, songs?: 
     console.log("Generated GPT-4 prompt:", userPrompt);
 
     const coverPromptResponse = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content: "You are an expert album cover designer who creates prompts for AI image generation. Focus on creating visually striking, professional album covers that capture the essence of music genres and the artistic style of the referenced artists. Return only the prompt, no explanations or comments."
+          content: `You are an expert album art director who specializes in analyzing and recreating the visual aesthetics of music artists. You understand the visual language, color palettes, typography, and artistic elements that define each artist's album covers and visual identity. Create prompts that capture the essence of their collective visual style while maintaining artistic coherence. Return only the image generation prompt, no explanations.`
         },
         {
           role: "user",
-          content: userPrompt
+          content: `Create a detailed prompt for an AI image generator to create a modern album cover for ${genre} music.
+
+Context:
+- Genre Description: ${description}
+- Get the artist that have worked for the album covers: ${songs && songs.length > 0 ? songs.map(s => s.artist).join(', ') : ''}
+
+Research these artists' album covers and visual aesthetics and use them as reference to create the album cover design based on them, also the image should not contain any text or logos.
+
+Return only the image generation prompt, no explanations.`
         }
       ],
       temperature: 0.7,
@@ -71,7 +79,7 @@ export async function generateImage(genre: string, description: string, songs?: 
         num_inference_steps: 4,
         output_format: "jpg",
         output_quality: 90,
-        negative_prompt: "text, letters, words, logos, watermarks, low quality, blurry, amateur, multiple album covers, collage, website layout, ui elements, distorted proportions, incomplete design",
+        negative_prompt: "text, letters, words, logos, watermarks, low quality, blurry, amateur, multiple album covers, collage, website layout, ui elements, distorted proportions, incomplete design, no text or logos",
       },
     });
 

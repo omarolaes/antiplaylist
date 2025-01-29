@@ -6,7 +6,7 @@ import YoutubePlayer from "@/components/player/YoutubePlayer";
 import TrackList from "@/components/player/TrackList";
 import Header from "@/components/home/Header";
 import Footer from "@/components/home/Footer";
-import { IoArrowForward } from "react-icons/io5";
+import { IoArrowForward, IoShuffle } from "react-icons/io5";
 import Image from 'next/image';
 
 interface Genre {
@@ -69,9 +69,9 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
         <div className="flex flex-col">
           {/* Hero Section with Gradient */}
           <div className="relative mb-6 p-6 md:p-8 rounded-xl bg-gradient-to-b from-rose-500/20 to-zinc-900">
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start justify-stretch">
               {genre.cover_image && (
-                <div className="shrink-0 w-48 h-48 md:w-56 md:h-56 shadow-2xl rounded-md overflow-hidden relative">
+                <div className="shrink-0 w-48 h-48 md:w-64 md:h-64 shadow-2xl rounded-md overflow-hidden relative">
                   <Image 
                     src={genre.cover_image} 
                     alt={`${genre.name} cover art`}
@@ -82,22 +82,22 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
                   />
                 </div>
               )}
-              <div className="flex flex-col justify-end">
+              <div className="flex flex-col justify-end w-full">
                 <span className="text-sm font-medium text-white/80">GENRE</span>
                 <h1 className="text-4xl md:text-6xl font-bold text-white mt-2">
                   {genre.name}
                 </h1>
                 {genre.description && (
-                  <p className="text-white/70 mt-4 max-w-3xl">{genre.description}</p>
+                  <p className="text-white/70 mt-4 text-lg">{genre.description}</p>
                 )}
+              </div>
                 <button
                   onClick={handleNextGenre}
-                  className="mt-6 inline-flex items-center gap-2 px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-colors font-medium text-sm"
+                  className="min-w-64 mt-6 inline-flex items-center gap-2 px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-colors font-medium text-lg"
                 >
-                  <span>NEXT RANDOM GENRE</span>
-                  <IoArrowForward className="w-4 h-4" />
+                  <span>NEXT GENRE</span>
+                  <IoShuffle className="w-8 h-8" />
                 </button>
-              </div>
             </div>
           </div>
 
