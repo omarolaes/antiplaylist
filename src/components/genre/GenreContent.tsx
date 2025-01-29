@@ -6,7 +6,7 @@ import YoutubePlayer from "@/components/player/YoutubePlayer";
 import TrackList from "@/components/player/TrackList";
 import Header from "@/components/home/Header";
 import Footer from "@/components/home/Footer";
-import { IoArrowForward, IoShuffle } from "react-icons/io5";
+import { IoShuffle } from "react-icons/io5";
 import Image from 'next/image';
 
 interface Genre {
