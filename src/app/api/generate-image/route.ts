@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { generateImage } from "@/lib/generateImage";
 import { supabase } from "@/lib/supabase";
+import { slugify } from "@/lib/utils/slugify";
 
 export async function POST(request: Request) {
   try {
@@ -24,20 +25,32 @@ export async function POST(request: Request) {
     // If songs weren't provided, try to fetch them from the database
     let songsToUse = songs;
     if (!songsToUse) {
-      const { data: genreData } = await supabase
+      const { data: genreData, error: genreError } = await supabase
         .from("genres")
         .select("id")
-        .eq("slug", genre.toLowerCase())
+        .eq("slug", slugify(genre))
         .single();
 
-      if (genreData?.id) {
-        const { data: dbSongs } = await supabase
-          .from("genre_songs")
-          .select("artist, song")
-          .eq("genre_id", genreData.id);
-        
-        songsToUse = dbSongs;
+      if (genreError) {
+        return NextResponse.json(
+          { error: "Genre not found. Please generate songs first." },
+          { status: 404 }
+        );
       }
+
+      const { data: dbSongs, error: dbSongsError } = await supabase
+        .from("genre_songs")
+        .select("artist, song")
+        .eq("genre_id", genreData.id);
+
+      if (dbSongsError) {
+        return NextResponse.json(
+          { error: "Failed to fetch songs from database" },
+          { status: 500 }
+        );
+      }
+
+      songsToUse = dbSongs;
     }
 
     // Only proceed if we have songs to use for inspiration
@@ -50,11 +63,11 @@ export async function POST(request: Request) {
 
     const imageUrl = await generateImage(genre, description, songsToUse);
 
-    // First, check if the genre exists
+    // Update the genre with the generated image URL
     const { data: existingGenre, error: fetchError } = await supabase
       .from("genres")
       .select("id")
-      .eq("slug", genre.toLowerCase())
+      .eq("slug", slugify(genre))
       .single();
 
     if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found"
@@ -84,7 +97,7 @@ export async function POST(request: Request) {
       }
     } else {
       // Check if genre exists by name to handle case sensitivity
-      const { data: existingByName } = await supabase
+      const { data: existingByName, error: existingByNameError } = await supabase
         .from("genres")
         .select("id")
         .ilike("name", genre)
@@ -113,7 +126,7 @@ export async function POST(request: Request) {
           .from("genres")
           .insert([{
             name: genre,
-            slug: genre.toLowerCase(),
+            slug: slugify(genre),
             cover_image: imageUrl,
             updated_at: new Date().toISOString()
           }]);

@@ -19,23 +19,27 @@ export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo)
     console.log("Input:", { genre, parentInfo });
 
     // First, try to get the existing genre
-    const { data: genreSongsData, error: fetchError } = await supabase
+    const { data: genreData, error: fetchError } = await supabase
       .from("genres")
       .select("id, name, description, genre_songs(artist, song, video_id)")
-      .or(`slug.eq.${genre.toLowerCase()},name.ilike.${genre}`)
+      .or(`slug.eq.${slugify(genre)},name.ilike.${genre}`)
       .single();
 
-    if (fetchError) {
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found"
+      throw fetchError;
+    }
+
+    if (fetchError && fetchError.code === 'PGRST116') {
       // Generate description before creating new genre
       console.log("Generating description for new genre...");
       const description = await generateDescription(genre, parentInfo);
       
-      // If not found, create new genre
+      // Create new genre
       const { data: newGenre, error: createError } = await supabase
         .from("genres")
         .insert([{
           name: genre,
-          slug: genre.toLowerCase(),
+          slug: slugify(genre),
           description: description,
           updated_at: new Date().toISOString()
         }])
@@ -43,15 +47,15 @@ export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo)
         .single();
 
       if (createError) {
-        // If the error is a duplicate key constraint, get the existing genre ID
+        // If duplicate key, fetch existing genre
         if (createError.code === '23505') {
-          const { data: existingGenre, error: fetchError } = await supabase
+          const { data: existingGenre, error: fetchExistingError } = await supabase
             .from('genres')
             .select('id')
-            .eq('slug', genre.toLowerCase())
+            .eq('slug', slugify(genre))
             .single();
 
-          if (fetchError) throw fetchError;
+          if (fetchExistingError) throw fetchExistingError;
           genreId = existingGenre.id;
           
           // Update the description for existing genre
@@ -71,10 +75,10 @@ export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo)
         genreId = newGenre.id;
       }
     } else {
-      genreId = genreSongsData.id;
+      genreId = genreData!.id;
       
       // Update description if it's missing
-      if (!genreSongsData.description) {
+      if (!genreData!.description) {
         console.log("Generating missing description for existing genre...");
         const description = await generateDescription(genre, parentInfo);
         const { error: updateError } = await supabase
@@ -88,7 +92,7 @@ export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo)
       }
     }
 
-    const existingSongs = genreSongsData?.genre_songs || [];
+    const existingSongs = genreData?.genre_songs || [];
 
     if (existingSongs.length > 0) {
       console.log("Found existing songs:", existingSongs.length);
@@ -125,7 +129,7 @@ export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo)
         const songsToUpdate = updatedSongs
           .filter(song => song.videoId)
           .map(song => ({
-            genre_id: genreSongsData?.id,
+            genre_id: genreId,
             artist: song.artist,
             song: song.song,
             video_id: song.videoId
@@ -194,6 +198,7 @@ The Smiths - How Soon Is Now?
 Aphex Twin - Windowlicker
 Joy Division - Atmosphere
 Boards of Canada - Roygbiv`;
+
     console.log("\n=== Initial Prompt ===");
     console.log(initialPrompt);
 
@@ -224,24 +229,11 @@ Boards of Canada - Roygbiv`;
     console.log("\n=== Initial Response ===");
     console.log("Raw response:", data.choices[0].message.content);
 
-    // Log validation process
-    console.log("\n=== Starting Validation ===");
+    // Validate the response
     const validationPrompt = `I'll show you the initial prompt that was sent to Perplexity AI, followed by their response. Please validate and refine the song selection based on the original criteria.
 
 Initial Prompt:
-You are part of an elite panel of music experts from Apple Music, Rolling Stone, Pitchfork, and BBC Radio 1 tasked with creating the definitive ${genreContext} playlist.
-
-GENRE DEFINITION:
-${description}
-
-As leading authorities who shape global music discourse, select exactly 5 tracks that capture this genre's essence and evolution.
-
-Your panel must choose:
-1. The genre's most iconic masterpiece - a track so significant it's featured in Apple Music's essential playlists
-2. A second groundbreaking classic consistently praised in Rolling Stone's retrospective reviews
-3. A brilliant but overlooked gem that Pitchfork critics consider criminally underrated
-4. A deep cut that BBC Radio 1's specialist DJs champion as genre-defining
-5. An innovative track that music historians universally acknowledge as pushing the genre's boundaries
+${initialPrompt}
 
 Perplexity AI provided these songs:
 ${data.choices[0].message.content}
@@ -321,7 +313,7 @@ Return only the final 5 songs, one per line, no additional text.`;
     console.log("\n=== Validated Songs List ===");
     console.log("Songs after validation:", validatedSongsList);
 
-    // Log YouTube search process
+    // Fetch YouTube video IDs
     console.log("\n=== Starting YouTube Search ===");
     const videoIds = await searchYouTubeVideos(validatedSongsList);
     console.log("YouTube search results:", videoIds);
@@ -338,7 +330,7 @@ Return only the final 5 songs, one per line, no additional text.`;
       })
       .filter((song: { videoId: string | null }) => song.videoId !== null);
 
-    // Log database operations
+    // Save songs to the database
     console.log("\n=== Database Operations ===");
     const slug = slugify(genre);
 
@@ -348,9 +340,14 @@ Return only the final 5 songs, one per line, no additional text.`;
       .eq("slug", slug)
       .single();
 
-    if (genreError || !existingGenreData) {
+    if (genreError && genreError.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error("Error fetching genre:", genreError);
+      throw genreError;
+    }
+
+    if (genreError && genreError.code === 'PGRST116') {
+      // Create new genre entry
       console.log("Creating new genre entry...");
-      // Format the genre name properly (first letter of each word capitalized)
       const formattedGenreName = genre
         .split("-")
         .map(
@@ -364,13 +361,13 @@ Return only the final 5 songs, one per line, no additional text.`;
         slug: slug,
       });
 
-      // Create the genre if it doesn't exist
       const { data: newGenre, error: createError } = await supabase
         .from("genres")
         .insert([
           {
             name: formattedGenreName,
             slug: slug,
+            description: description, // Ensure description is saved
             updated_at: new Date().toISOString(),
           },
         ])
@@ -395,14 +392,14 @@ Return only the final 5 songs, one per line, no additional text.`;
       genreId = newGenre.id;
     } else {
       console.log("Found existing genre:", existingGenreData);
-      genreId = existingGenreData.id;
+      genreId = existingGenreData!.id;
     }
 
     if (!genreId) {
       throw new Error("Failed to obtain genre ID after creation/lookup");
     }
 
-    // Log song saving
+    // Save songs to the database
     console.log("\n=== Saving Songs ===");
     try {
       // Get existing songs for this genre to check for duplicates
@@ -433,7 +430,6 @@ Return only the final 5 songs, one per line, no additional text.`;
           .upsert(songsToSave);
 
         if (upsertError) {
-          // Don't throw the error, just log it and continue
           console.error("Failed to save songs:", upsertError);
         } else {
           console.log("Successfully saved new songs to database");

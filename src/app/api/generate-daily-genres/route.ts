@@ -3,6 +3,7 @@ import { mainGenres } from "../../../../data/genres/genresList";
 import { supabase } from "@/lib/supabase";
 import { generateDescription } from "@/lib/generateDescription";
 import { generateSongs } from "@/lib/generateSongs";
+import { slugify } from "@/lib/utils/slugify";
 
 // Helper function to flatten the genre list
 function getAllGenres() {
@@ -22,12 +23,7 @@ function getAllGenres() {
 }
 
 // Helper function to convert genre name to slug
-function toSlug(genreName: string) {
-  return genreName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
+// Already handled by slugify utility
 
 // Helper to get random items from array
 function getRandomItems<T>(array: T[], count: number): T[] {
@@ -50,17 +46,25 @@ export async function POST(request: Request) {
     const allGenres = getAllGenres();
     
     // Get existing genres from Supabase
-    const { data: existingGenres } = await supabase
+    const { data: existingGenres, error: fetchError } = await supabase
       .from("genres")
       .select("slug")
       .order("created_at", { ascending: true });
+
+    if (fetchError) {
+      console.error("Error fetching existing genres:", fetchError);
+      return NextResponse.json(
+        { error: "Failed to fetch existing genres" },
+        { status: 500 }
+      );
+    }
 
     // Convert existing genres to a Set for faster lookup
     const existingSlugs = new Set(existingGenres?.map(g => g.slug) || []);
     
     // Filter out genres that already exist
     const newGenres = allGenres.filter(genre => 
-      !existingSlugs.has(toSlug(genre))
+      !existingSlugs.has(slugify(genre))
     );
 
     if (newGenres.length === 0) {

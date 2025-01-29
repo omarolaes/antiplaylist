@@ -2,19 +2,30 @@ import { NextResponse } from "next/server";
 import { mainGenres } from "../../../../data/genres/genresList";
 import { supabase } from "@/lib/supabase";
 import { generateSongs } from "@/lib/generateSongs";
+import { generateImage } from "@/lib/generateImage";
+import { slugify } from "@/lib/utils/slugify";
 
-// Helper function to get random items from array
+// Helper function to get all sub-subgenres
+function getAllGenres() {
+  const genres: string[] = [];
+
+  mainGenres.forEach((mainGenre) => {
+    mainGenre.subgenres?.forEach((subgenre) => {
+      subgenre.subgenres?.forEach((subSubgenre) => {
+        if (subSubgenre.name) {
+          genres.push(subSubgenre.name);
+        }
+      });
+    });
+  });
+
+  return genres;
+}
+
+// Helper to get random items from array
 function getRandomItems<T>(array: T[], count: number): T[] {
   const shuffled = [...array].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
-}
-
-// Helper function to convert genre name to slug
-function toSlug(genreName: string) {
-  return genreName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
 }
 
 export async function GET(request: Request) {
@@ -26,31 +37,28 @@ export async function GET(request: Request) {
     }
 
     // Get all possible genres
-    const allGenres = Array.from(new Set(
-      mainGenres.reduce((acc: string[], mainGenre) => {
-        mainGenre.subgenres?.forEach((subgenre) => {
-          subgenre.subgenres?.forEach((subSubgenre) => {
-            if (subSubgenre.name) {
-              acc.push(subSubgenre.name);
-            }
-          });
-        });
-        return acc;
-      }, [])
-    ));
+    const allGenres = getAllGenres();
 
     // Get existing genres from Supabase
-    const { data: existingGenres } = await supabase
+    const { data: existingGenres, error: fetchError } = await supabase
       .from("genres")
       .select("slug")
       .order("created_at", { ascending: true });
 
+    if (fetchError) {
+      console.error("Error fetching existing genres:", fetchError);
+      return NextResponse.json(
+        { error: "Failed to fetch existing genres" },
+        { status: 500 }
+      );
+    }
+
     // Convert existing genres to a Set for faster lookup
     const existingSlugs = new Set(existingGenres?.map(g => g.slug) || []);
-    
+
     // Filter out genres that already exist
     const newGenres = allGenres.filter(genre => 
-      !existingSlugs.has(toSlug(genre))
+      !existingSlugs.has(slugify(genre))
     );
 
     if (newGenres.length === 0) {
@@ -78,6 +86,20 @@ export async function GET(request: Request) {
           songCount: songs.length
         });
         console.log(`[Cron] Successfully processed ${genreToProcess} with ${songs.length} songs`);
+        
+        // Generate image for the genre
+        const genreDescription = await supabase
+          .from("genres")
+          .select("description")
+          .eq("slug", slugify(genreToProcess))
+          .single();
+
+        if (genreDescription.data?.description) {
+          const imageUrl = await generateImage(genreToProcess, genreDescription.data.description, songs);
+          console.log(`[Cron] Image generated for ${genreToProcess}: ${imageUrl}`);
+        } else {
+          console.warn(`[Cron] Description not found for genre: ${genreToProcess}`);
+        }
       }
       
     } catch (error) {
