@@ -3,11 +3,6 @@ import { supabase } from "./supabase";
 import { slugify } from "./utils/slugify";
 import { OpenAI } from "openai";
 
-interface Song {
-  artist: string;
-  // Add other properties if needed
-}
-
 export async function generateImage(genre: string, description: string) {
   try {
     console.log("=== Starting Image Generation Process ===");
