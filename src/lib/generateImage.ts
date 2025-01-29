@@ -11,29 +11,28 @@ interface Song {
 export async function generateImage(genre: string, description: string, songs?: Song[]) {
   try {
     console.log("=== Starting Image Generation Process ===");
-    console.log("Input:", { genre, description, songs });
+    console.log("Input:", { genre, description });
 
     // Initialize OpenAI
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // Simplified prompt focusing on abstract representation
-    const userPrompt = `Create a minimal, abstract representation of the music genre: "${genre}". Use shades of gray and light rose color. The image should contain one element, object or symbol that represents the genre without any text or words. As context the genre is described as: ${description}.`;
+    const contextPrompt = `Create a simple Renaissance oil painting scene that represents the cultural and historical context of ${genre} music. Focus on the time period, location, and atmosphere where this genre emerged. The scene should be simple and evocative. The painting should look like a real painting, even if the elements in the painting are not from that time period. For context, the genre is ${genre} and the description is ${description}.`;
 
-    console.log("Generated GPT-4 prompt:", userPrompt);
+    console.log("Context prompt:", contextPrompt);
 
     const coverPromptResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `You are an expert in creating resainance painting about diffenrt genres. Generate prompts that focus on minimalism inspired by James Turrell and use a specific color palette. Return only the image generation prompt, no explanations.`
+          content: `You are a master of Renaissance portraiture and historical scenes. Create a concise image generation prompt that captures the essence of musical genres through their cultural and historical context. Focus on scenes, environments, and atmospheric elements rather than specific people. The image generated should have the lighting, colors, style, and composition of a Renaissance painting. Return just the text-to-image prompt and nothing else.`,
         },
         {
           role: "user",
-          content: userPrompt
-        }
+          content: contextPrompt,
+        },
       ],
       temperature: 0.7,
     });
@@ -55,17 +54,23 @@ export async function generateImage(genre: string, description: string, songs?: 
     const replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
     });
+    console.log("Cover Prompt: ", coverPrompt);
 
-    // Generate image using Replicate with the enhanced prompt
+    // Refined prompt with explicit Renaissance style instructions
+    const refinedPrompt = `${coverPrompt}. Ensure the image embodies the Renaissance art style, featuring chiaroscuro lighting, realistic human figures, and classical architectural elements reminiscent of artists like Caravaggio and Michelangelo.`;
+
+    // Updated Replicate run with increased inference steps
     const output = await replicate.run("black-forest-labs/flux-schnell", {
       input: {
-        prompt: coverPrompt,
+        prompt: refinedPrompt,
         megapixels: "1",
         aspect_ratio: "1:1",
         num_inference_steps: 4,
+        fast: false,
         output_format: "jpg",
-        output_quality: 90,
-        negative_prompt: "text, letters, words, logos, watermarks, low quality, blurry, amateur, multiple album covers, collage, website layout, ui elements, distorted proportions, incomplete design, no text or logos",
+        output_quality: 95,
+        negative_prompt:
+          "text, letters, words, logos, watermarks, low quality, blurry, amateur, multiple album covers, collage, website layout, ui elements, distorted proportions, incomplete design, no text or logos, vinyls, headphones, musical notes, instruments, microphone, speakers, amplifiers, turntables, vinyl records, cassette tapes, CDs, MP3 players",
       },
     });
 
@@ -89,30 +94,28 @@ export async function generateImage(genre: string, description: string, songs?: 
     // Log the image size and type for debugging
     console.log("Image data:", {
       size: imageData.size,
-      type: imageData.type
+      type: imageData.type,
     });
 
     // Before uploading, delete any existing file with the same name
     const { data: existingFiles, error: listError } = await supabase.storage
-      .from('genre-covers')
+      .from("genre-covers")
       .list();
 
     if (!listError && existingFiles) {
       const existingFile = existingFiles.find(file => file.name === filename);
       if (existingFile) {
-        await supabase.storage
-          .from('genre-covers')
-          .remove([filename]);
+        await supabase.storage.from("genre-covers").remove([filename]);
       }
     }
 
     // Upload to Supabase storage with the slug-based filename
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('genre-covers')
+      .from("genre-covers")
       .upload(filename, imageData, {
-        contentType: 'image/png',
-        cacheControl: '3600',
-        upsert: true // Enable upsert to replace existing files
+        contentType: "image/png",
+        cacheControl: "3600",
+        upsert: true, // Enable upsert to replace existing files
       });
 
     if (uploadError) {
@@ -121,9 +124,9 @@ export async function generateImage(genre: string, description: string, songs?: 
     }
 
     // Get the public URL and ensure it exists
-    const { data: { publicUrl } } = supabase.storage
-      .from('genre-covers')
-      .getPublicUrl(uploadData.path);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("genre-covers").getPublicUrl(uploadData.path);
 
     if (!publicUrl) {
       throw new Error("Failed to get public URL for uploaded image");
