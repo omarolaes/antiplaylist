@@ -95,7 +95,7 @@ export async function GET(request: Request) {
           .single();
 
         if (genreDescription.data?.description) {
-          const imageUrl = await generateImage(genreToProcess, genreDescription.data.description, songs);
+          const imageUrl = await generateImage(genreToProcess, genreDescription.data.description);
           console.log(`[Cron] Image generated for ${genreToProcess}: ${imageUrl}`);
         } else {
           console.warn(`[Cron] Description not found for genre: ${genreToProcess}`);

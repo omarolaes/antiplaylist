@@ -8,7 +8,7 @@ interface Song {
   // Add other properties if needed
 }
 
-export async function generateImage(genre: string, description: string, songs?: Song[]) {
+export async function generateImage(genre: string, description: string) {
   try {
     console.log("=== Starting Image Generation Process ===");
     console.log("Input:", { genre, description });

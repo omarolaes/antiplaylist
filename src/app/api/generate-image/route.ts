@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const imageUrl = await generateImage(genre, description, songsToUse);
+    const imageUrl = await generateImage(genre, description);
 
     // Update the genre with the generated image URL
     const { data: existingGenre, error: fetchError } = await supabase
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
       }
     } else {
       // Check if genre exists by name to handle case sensitivity
-      const { data: existingByName, error: existingByNameError } = await supabase
+      const { data: existingByName } = await supabase
         .from("genres")
         .select("id")
         .ilike("name", genre)
