@@ -29,20 +29,6 @@ export default function GenreGenerationTester() {
     image?: TestResult;
   }>({});
 
-  // Get all available genres with deduplication
-  const allGenres = Array.from(new Set(
-    mainGenres.reduce((acc: string[], mainGenre) => {
-      mainGenre.subgenres?.forEach((subgenre) => {
-        subgenre.subgenres?.forEach((subSubgenre) => {
-          if (subSubgenre.name) {
-            acc.push(subSubgenre.name);
-          }
-        });
-      });
-      return acc;
-    }, [])
-  )).sort();
-
   // Fetch available genres on component mount
   useEffect(() => {
     const fetchAvailableGenres = async () => {
