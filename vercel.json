@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/generate-daily-genres",
+      "schedule": "0 0 * * *"
+    }
+  ]
+} 
