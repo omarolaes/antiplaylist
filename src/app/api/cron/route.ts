@@ -61,35 +61,30 @@ export async function GET(request: Request) {
       });
     }
 
-    // Select 20 random genres from the remaining ones
-    const genresToProcess = getRandomItems(newGenres, 20);
+    // Select 1 random genre from the remaining ones
+    const genreToProcess = getRandomItems(newGenres, 1)[0];
     const processedGenres = [];
     const errors = [];
 
-    // Process each genre
-    for (const genre of genresToProcess) {
-      try {
-        console.log(`[Cron] Processing genre: ${genre}`);
-        const songs = await generateSongs(genre);
-        
-        if (songs && songs.length > 0) {
-          processedGenres.push({
-            genre,
-            songCount: songs.length
-          });
-          console.log(`[Cron] Successfully processed ${genre} with ${songs.length} songs`);
-        }
-        
-        // Add a small delay between processing to avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-      } catch (error) {
-        console.error(`[Cron] Error processing genre ${genre}:`, error);
-        errors.push({
-          genre,
-          error: error instanceof Error ? error.message : "Unknown error"
+    // Process the genre
+    try {
+      console.log(`[Cron] Processing genre: ${genreToProcess}`);
+      const songs = await generateSongs(genreToProcess);
+      
+      if (songs && songs.length > 0) {
+        processedGenres.push({
+          genre: genreToProcess,
+          songCount: songs.length
         });
+        console.log(`[Cron] Successfully processed ${genreToProcess} with ${songs.length} songs`);
       }
+      
+    } catch (error) {
+      console.error(`[Cron] Error processing genre ${genreToProcess}:`, error);
+      errors.push({
+        genre: genreToProcess,
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
 
     // Return final results
