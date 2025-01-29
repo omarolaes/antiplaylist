@@ -2,7 +2,6 @@ import { supabase } from "@/lib/supabase";
 import { generateDescription } from "@/app/api/generate-description/route";
 import { searchYouTubeVideos } from "@/lib/youtube";
 import { slugify } from "@/lib/utils/slugify";
-import { generateImage } from "@/lib/generateImage";
 
 
 export interface ParentGenreInfo {

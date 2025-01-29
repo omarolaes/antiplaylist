@@ -27,7 +27,7 @@ function findParentGenreInfo(targetGenre: string) {
 
 export async function POST(request: Request) {
   try {
-    // Check if request has content
+    // Validate request content type
     const contentType = request.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
       return NextResponse.json(
@@ -36,20 +36,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Clone the request before reading
-    const clonedRequest = request.clone();
-    const text = await clonedRequest.text();
-
-    if (!text) {
-      return NextResponse.json(
-        { error: "Empty request body" },
-        { status: 400 }
-      );
-    }
-
-    const { genre } = JSON.parse(text);
-    console.log("Received POST request for genre:", genre);
-
+    // Parse and validate request body
+    const { genre } = await request.json();
+    
     if (!genre || typeof genre !== 'string' || genre.length > 100) {
       return NextResponse.json(
         { error: "Invalid genre format or length" },
@@ -57,14 +46,27 @@ export async function POST(request: Request) {
       );
     }
 
-    const parentInfo = findParentGenreInfo(genre);
-    const songs = await generateSongs(genre, parentInfo);
+    // Sanitize genre input
+    const sanitizedGenre = genre.replace(/[^a-zA-Z0-9-\s]/g, '').trim();
+    
+    // Get parent genre info and generate songs
+    const parentInfo = findParentGenreInfo(sanitizedGenre);
+    const { songs } = await generateSongs(sanitizedGenre, parentInfo);
+
+    // Return songs array, ensuring it's not empty
+    if (!songs?.length) {
+      return NextResponse.json(
+        { error: "No songs could be generated" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({ songs });
   } catch (error) {
     console.error("Error in generate-songs route:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: "Failed to generate songs" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

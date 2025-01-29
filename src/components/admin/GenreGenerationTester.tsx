@@ -106,7 +106,7 @@ export default function GenreGenerationTester() {
         ...prev,
         songs: {
           success: true,
-          data: data.songs
+          data: data.songs || []
         }
       }));
     } catch (error) {

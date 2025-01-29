@@ -57,11 +57,11 @@ CORE ELEMENTS TO INCLUDE:
 
 STRICT FORMATTING REQUIREMENTS:
 - Exactly ONE sentence
-- Maximum 250 characters (absolutely crucial)
+- Maximum 350 characters (absolutely crucial)
 - Must end with a period
 - No formatting symbols (asterisks, bullets, quotes)
 
-YOUR TASK - Craft a single, historically precise sentence under 250 characters that captures the essence of ${genreContext}, ensuring every detail can withstand expert scrutiny:`;
+YOUR TASK - Craft a single, historically precise sentence under 350 characters that captures the essence of ${genreContext}, ensuring every detail can withstand expert scrutiny:`;
 
     const response = await fetch("https://api.perplexity.ai/chat/completions", {
       method: "POST",

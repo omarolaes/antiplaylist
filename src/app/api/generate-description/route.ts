@@ -73,20 +73,22 @@ export async function generateDescription(genre: string, parentInfo?: ParentGenr
         })`
       : genre;
 
-    const prompt = `As a distinguished music historian expert in new, emerging and old genres, craft a definitive micro-description of ${genreContext} that will serve as the authoritative reference for music platforms and educational resources. Your description must withstand scrutiny from the most knowledgeable genre experts and musicologists.
+    const prompt = `As a music historian with expertise in genre evolution, create a micro-description of ${genreContext} that captures its essence through an interesting fact or cultural phenomenon.
 
-CORE ELEMENTS TO INCLUDE:
-1. Historical Context: Precise emergence period (verified dates) and specific geographical origin
-2. Musical Characteristics: One defining sonic or structural element that's universally acknowledged
-3. Cultural Impact: Connection to an undisputed pioneering artist or documented influential movement
+CORE ELEMENTS TO INCLUDE (choose one):
+1. A surprising historical fact or unique origin story
+2. An unexpected cultural connection or influence
+3. A distinctive musical innovation or technical quirk
+4. A notable social or technological context from its emergence period
 
 STRICT FORMATTING REQUIREMENTS:
 - Exactly ONE sentence
-- Maximum 250 characters (absolutely crucial)
+- Maximum 350 characters (absolutely crucial)
 - Must end with a period
-- No formatting symbols (asterisks, bullets, quotes)
+- No artist names or band references
+- Focus on what makes this genre uniquely interesting
 
-YOUR TASK - Craft a single, historically precise sentence under 250 characters that captures the essence of ${genreContext}, ensuring every detail can withstand expert scrutiny:`;
+YOUR TASK - Craft a single, engaging sentence under 350 characters that reveals a fascinating aspect of ${genreContext}:`;
 
     const response = await fetch("https://api.perplexity.ai/chat/completions", {
       method: "POST",

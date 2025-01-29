@@ -23,6 +23,8 @@ export async function generateImage(genre: string, description: string, songs?: 
       ? `. The cover should be inspired by the visual aesthetics and album art style of these artists: ${songs.map(s => s.artist).join(', ')}`
       : '';
 
+      console.log("Artists context:", artistsContext);
+
     const userPrompt = `Create a prompt for generating a modern album cover for ${genre} music. The genre is described as: ${description}${artistsContext}`;
 
     console.log("Generated GPT-4 prompt:", userPrompt);
@@ -41,6 +43,8 @@ export async function generateImage(genre: string, description: string, songs?: 
       ],
       temperature: 0.7,
     });
+
+    console.log("Cover prompt response:", coverPromptResponse);
 
     const coverPrompt = coverPromptResponse.choices[0].message.content;
     if (!coverPrompt) {
