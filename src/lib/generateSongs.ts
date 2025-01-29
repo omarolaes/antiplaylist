@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { generateDescription } from "@/app/api/generate-description/route";
+import { generateDescription } from "@/lib/generateDescription";
 import { searchYouTubeVideos } from "@/lib/youtube";
 import { slugify } from "@/lib/utils/slugify";
 
@@ -238,7 +238,7 @@ Return only the final 5 songs, one per line, no additional text.`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gpt-4",
+          model: "gpt-4o",
           messages: [
             {
               role: "user",
