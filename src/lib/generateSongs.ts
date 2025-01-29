@@ -21,17 +21,22 @@ export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo)
     // First, try to get the existing genre
     const { data: genreSongsData, error: fetchError } = await supabase
       .from("genres")
-      .select("id, name, genre_songs(artist, song, video_id)")
+      .select("id, name, description, genre_songs(artist, song, video_id)")
       .or(`slug.eq.${genre.toLowerCase()},name.ilike.${genre}`)
       .single();
 
     if (fetchError) {
+      // Generate description before creating new genre
+      console.log("Generating description for new genre...");
+      const description = await generateDescription(genre, parentInfo);
+      
       // If not found, create new genre
       const { data: newGenre, error: createError } = await supabase
         .from("genres")
         .insert([{
           name: genre,
           slug: genre.toLowerCase(),
+          description: description,
           updated_at: new Date().toISOString()
         }])
         .select("id")
@@ -48,6 +53,16 @@ export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo)
 
           if (fetchError) throw fetchError;
           genreId = existingGenre.id;
+          
+          // Update the description for existing genre
+          const { error: updateError } = await supabase
+            .from('genres')
+            .update({ description: description })
+            .eq('id', genreId);
+            
+          if (updateError) {
+            console.error('Error updating genre description:', updateError);
+          }
         } else {
           console.error('Error creating genre:', createError);
           throw new Error(`Failed to create genre: ${createError.message}`);
@@ -57,6 +72,20 @@ export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo)
       }
     } else {
       genreId = genreSongsData.id;
+      
+      // Update description if it's missing
+      if (!genreSongsData.description) {
+        console.log("Generating missing description for existing genre...");
+        const description = await generateDescription(genre, parentInfo);
+        const { error: updateError } = await supabase
+          .from('genres')
+          .update({ description: description })
+          .eq('id', genreId);
+          
+        if (updateError) {
+          console.error('Error updating genre description:', updateError);
+        }
+      }
     }
 
     const existingSongs = genreSongsData?.genre_songs || [];

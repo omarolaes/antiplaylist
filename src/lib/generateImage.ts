@@ -126,14 +126,16 @@ export async function generateImage(genre: string, description: string, songs?: 
       throw new Error(`Failed to upload image: ${uploadError.message}`);
     }
 
-    // Get the public URL
-    const publicUrl = supabase.storage
+    // Get the public URL and ensure it exists
+    const { data: { publicUrl } } = supabase.storage
       .from('genre-covers')
-      .getPublicUrl(uploadData.path).data.publicUrl;
+      .getPublicUrl(uploadData.path);
 
-    console.log("Generated image URLs:", {
-      supabaseUrl: publicUrl
-    });
+    if (!publicUrl) {
+      throw new Error("Failed to get public URL for uploaded image");
+    }
+
+    console.log("Generated image URL:", publicUrl);
 
     return publicUrl;
   } catch (error) {

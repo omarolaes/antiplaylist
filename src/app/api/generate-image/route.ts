@@ -50,14 +50,82 @@ export async function POST(request: Request) {
 
     const imageUrl = await generateImage(genre, description, songsToUse);
 
-    // Update the genres table with the image URL
-    const { error: updateError } = await supabase
+    // First, check if the genre exists
+    const { data: existingGenre, error: fetchError } = await supabase
       .from("genres")
-      .update({ cover_image: imageUrl })
-      .eq("slug", genre.toLowerCase());
+      .select("id")
+      .eq("slug", genre.toLowerCase())
+      .single();
 
-    if (updateError) {
-      console.error("Error updating genre with image URL:", updateError);
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error("Error fetching genre:", fetchError);
+      return NextResponse.json(
+        { error: "Failed to check genre existence" },
+        { status: 500 }
+      );
+    }
+
+    if (existingGenre) {
+      // Update existing genre
+      const { error: updateError } = await supabase
+        .from("genres")
+        .update({ 
+          cover_image: imageUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", existingGenre.id);
+
+      if (updateError) {
+        console.error("Error updating genre with image URL:", updateError);
+        return NextResponse.json(
+          { error: "Failed to save image URL to database" },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Check if genre exists by name to handle case sensitivity
+      const { data: existingByName } = await supabase
+        .from("genres")
+        .select("id")
+        .ilike("name", genre)
+        .single();
+
+      if (existingByName) {
+        // Update if found by name
+        const { error: updateError } = await supabase
+          .from("genres")
+          .update({ 
+            cover_image: imageUrl,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", existingByName.id);
+
+        if (updateError) {
+          console.error("Error updating genre with image URL:", updateError);
+          return NextResponse.json(
+            { error: "Failed to save image URL to database" },
+            { status: 500 }
+          );
+        }
+      } else {
+        // Insert new genre
+        const { error: insertError } = await supabase
+          .from("genres")
+          .insert([{
+            name: genre,
+            slug: genre.toLowerCase(),
+            cover_image: imageUrl,
+            updated_at: new Date().toISOString()
+          }]);
+
+        if (insertError) {
+          console.error("Error inserting genre with image URL:", insertError);
+          return NextResponse.json(
+            { error: "Failed to create new genre record" },
+            { status: 500 }
+          );
+        }
+      }
     }
 
     return NextResponse.json({ imageUrl });
