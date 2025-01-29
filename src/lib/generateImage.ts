@@ -18,35 +18,21 @@ export async function generateImage(genre: string, description: string, songs?: 
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // Create an enhanced prompt using GPT-4
-    const artistsContext = songs && songs.length > 0 
-      ? `. The cover should be inspired by the visual aesthetics and album art style of these artists: ${songs.map(s => s.artist).join(', ')}`
-      : '';
-
-      console.log("Artists context:", artistsContext);
-
-    const userPrompt = `Create a prompt for generating a modern album cover for ${genre} music. The genre is described as: ${description}${artistsContext}`;
+    // Simplified prompt focusing on abstract representation
+    const userPrompt = `Create a minimal, abstract representation of the music genre: "${genre}". Use shades of gray and light rose color. The image should contain one element, object or symbol that represents the genre without any text or words. As context the genre is described as: ${description}.`;
 
     console.log("Generated GPT-4 prompt:", userPrompt);
 
     const coverPromptResponse = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `You are an expert album art director who specializes in analyzing and recreating the visual aesthetics of music artists. You understand the visual language, color palettes, typography, and artistic elements that define each artist's album covers and visual identity. Create prompts that capture the essence of their collective visual style while maintaining artistic coherence. Return only the image generation prompt, no explanations.`
+          content: `You are an expert in creating resainance painting about diffenrt genres. Generate prompts that focus on minimalism inspired by James Turrell and use a specific color palette. Return only the image generation prompt, no explanations.`
         },
         {
           role: "user",
-          content: `Create a detailed prompt for an AI image generator to create a modern album cover for ${genre} music.
-
-Context:
-- Genre Description: ${description}
-- Get the artist that have worked for the album covers: ${songs && songs.length > 0 ? songs.map(s => s.artist).join(', ') : ''}
-
-Research these artists' album covers and visual aesthetics and use them as reference to create the album cover design based on them, also the image should not contain any text or logos.
-
-Return only the image generation prompt, no explanations.`
+          content: userPrompt
         }
       ],
       temperature: 0.7,
