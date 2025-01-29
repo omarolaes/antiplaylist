@@ -13,7 +13,7 @@ interface TestResult {
   success: boolean;
   data?: string | Song[] | { 
     description: string; 
-    imageUrl: string;
+    imageUrl: string 
   };
   error?: string;
 }
@@ -27,11 +27,6 @@ export default function GenreGenerationTester() {
     songs?: TestResult;
     image?: TestResult;
   }>({});
-  const [triggerResult, setTriggerResult] = useState<{
-    success: boolean;
-    message: string;
-    error?: string;
-  } | null>(null);
 
   // Fetch available genres on component mount
   useEffect(() => {
@@ -179,66 +174,10 @@ export default function GenreGenerationTester() {
     }
   };
 
-  const triggerCronJob = async () => {
-    setIsLoading(true);
-    setTriggerResult(null);
-    try {
-      const response = await fetch("/api/admin/trigger-generation", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // If using cookies or other auth, additional headers might not be necessary
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || "Failed to trigger generation");
-
-      setTriggerResult({
-        success: true,
-        message: data.message || "Generation triggered successfully.",
-      });
-
-      // Optionally, refresh the available genres
-      const genresResponse = await fetch("/api/get-unprocessed-genres");
-      const genresData = await genresResponse.json();
-      if (genresResponse.ok) {
-        setAvailableGenres(genresData.genres);
-      }
-
-    } catch (error) {
-      setTriggerResult({
-        success: false,
-        message: "Failed to trigger generation.",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold mb-4">Genre Generation Tester</h1>
       
-      {/* Trigger Cron Job Button */}
-      <div className="mb-6">
-        <button
-          onClick={triggerCronJob}
-          disabled={isLoading}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md disabled:opacity-50"
-        >
-          {isLoading ? "Processing..." : "Trigger Genre Generation"}
-        </button>
-        {triggerResult && (
-          <p className={`mt-2 text-sm ${triggerResult.success ? "text-green-500" : "text-red-500"}`}>
-            {triggerResult.message}
-            {triggerResult.error && ` - ${triggerResult.error}`}
-          </p>
-        )}
-      </div>
-
       {/* Genre Selection */}
       <div className="space-y-2">
         <label className="block text-sm font-medium">
@@ -299,15 +238,15 @@ export default function GenreGenerationTester() {
                     ? results.description.data 
                     : Array.isArray(results.description.data)
                       ? ''
-                      : (results.description.data as { description: string }).description}
+                      : results.description.data?.description}
                 </p>
                 {typeof results.description.data !== 'string' && 
                  !Array.isArray(results.description.data) && 
-                 (results.description.data as { imageUrl: string }).imageUrl && (
+                 results.description.data?.imageUrl && (
                   <div className="mt-4">
                     <h3 className="text-md font-medium mb-2">Generated Image</h3>
                     <Image 
-                      src={(results.description.data as { imageUrl: string }).imageUrl} 
+                      src={results.description.data.imageUrl} 
                       alt={`Generated image for ${selectedGenre}`}
                       width={500}
                       height={300}
