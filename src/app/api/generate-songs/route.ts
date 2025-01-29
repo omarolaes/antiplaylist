@@ -32,7 +32,7 @@ function findParentGenreInfo(targetGenre: string): ParentGenreInfo | undefined {
   return undefined;
 }
 
-async function generateSongs(genre: string, parentInfo?: ParentGenreInfo) {
+export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60000);
 
