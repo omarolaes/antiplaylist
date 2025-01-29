@@ -67,8 +67,8 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
       try {
         playerRef.current.destroy();
         playerRef.current = null;
-      } catch (e) {
-        console.warn("Error cleaning up player:", e);
+      } catch {
+        console.warn("Error cleaning up player:");
       }
     }
   }, []);
@@ -98,15 +98,15 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
             // Video is paused or cued but not playing - likely blocked by autoplay policy
             clearInterval(checkPlayingInterval);
           }
-        } catch (error) {
+        } catch {
           clearInterval(checkPlayingInterval);
         }
       }, 250);
 
       // Clear interval after 5 seconds to prevent memory leaks
       setTimeout(() => clearInterval(checkPlayingInterval), 5000);
-    } catch (error) {
-      console.warn("Autoplay failed:", error);
+    } catch {
+      console.warn("Autoplay failed");
     }
   }, []);
 
