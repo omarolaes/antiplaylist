@@ -1,5 +1,6 @@
 import Replicate from "replicate";
 import { supabase } from "./supabase";
+import { slugify } from "./utils/slugify";
 
 export async function generateImage(genre: string, description: string) {
   try {
@@ -7,7 +8,7 @@ export async function generateImage(genre: string, description: string) {
     console.log("Input:", { genre, description });
 
     // Create a slug-based filename
-    const slug = genre.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const slug = slugify(genre);
     const filename = `${slug}.png`;
 
     // Initialize Replicate

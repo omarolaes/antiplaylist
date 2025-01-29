@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { generateDescription } from "@/app/api/generate-description/route";
 import { searchYouTubeVideos } from "@/lib/youtube";
+import { slugify } from "@/lib/utils/slugify";
 
 
 export interface ParentGenreInfo {
@@ -233,10 +234,12 @@ Return only the final 5 songs, one per line, no additional text.`;
 
     // Log database operations
     console.log("\n=== Database Operations ===");
+    const slug = slugify(genre);
+
     const { data: genreData, error: genreError } = await supabase
       .from("genres")
       .select("id, name")
-      .eq("slug", genre.toLowerCase())
+      .eq("slug", slug)
       .single();
 
     let genreId;
@@ -254,7 +257,7 @@ Return only the final 5 songs, one per line, no additional text.`;
       console.log("Genre not found, creating new genre entry:", {
         originalGenre: genre,
         formattedName: formattedGenreName,
-        slug: genre.toLowerCase(),
+        slug: slug,
       });
 
       // Create the genre if it doesn't exist
@@ -262,8 +265,8 @@ Return only the final 5 songs, one per line, no additional text.`;
         .from("genres")
         .insert([
           {
-            name: formattedGenreName, // Use the properly formatted name
-            slug: genre.toLowerCase(),
+            name: formattedGenreName,
+            slug: slug,
             updated_at: new Date().toISOString(),
           },
         ])
@@ -274,7 +277,7 @@ Return only the final 5 songs, one per line, no additional text.`;
         console.error("Failed to create genre:", {
           error: createError,
           genreName: formattedGenreName,
-          slug: genre.toLowerCase(),
+          slug: slug,
         });
         return songsWithVideos;
       }
@@ -282,7 +285,7 @@ Return only the final 5 songs, one per line, no additional text.`;
       console.log("Successfully created new genre:", {
         id: newGenre.id,
         name: formattedGenreName,
-        slug: genre.toLowerCase(),
+        slug: slug,
       });
 
       genreId = newGenre.id;

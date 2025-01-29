@@ -61,43 +61,46 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-zinc-900">
       <Header />
 
-      <main className="flex-grow max-w-7xl mx-auto py-8">
-        <div className="mx-auto">
-          <div className="mb-8">
-            <div className="grid grid-cols-1 lg:grid-cols-6 items-start justify-between gap-8">
-              <div className="col-span-4 space-y-4">
-                <h1 className="text-4xl md:text-5xl font-bold text-white">
+      <main className="flex-grow w-full max-w-[1800px] mx-auto px-4 md:px-8 py-6">
+        <div className="flex flex-col">
+          {/* Hero Section with Gradient */}
+          <div className="relative mb-6 p-6 md:p-8 rounded-xl bg-gradient-to-b from-rose-500/20 to-zinc-900">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+              {genre.cover_image && (
+                <div className="shrink-0 w-48 h-48 md:w-56 md:h-56 shadow-2xl rounded-md overflow-hidden">
+                  <img 
+                    src={genre.cover_image} 
+                    alt={`${genre.name} cover art`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex flex-col justify-end">
+                <span className="text-sm font-medium text-white/80">GENRE</span>
+                <h1 className="text-4xl md:text-6xl font-bold text-white mt-2">
                   {genre.name}
                 </h1>
                 {genre.description && (
-                  <p className="text-zinc-300 text-lg">{genre.description}</p>
+                  <p className="text-white/70 mt-4 max-w-3xl">{genre.description}</p>
                 )}
-                {genre.cover_image && (
-                  <div className="aspect-square w-full max-w-md rounded-lg overflow-hidden">
-                    <img 
-                      src={genre.cover_image} 
-                      alt={`${genre.name} cover art`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+                <button
+                  onClick={handleNextGenre}
+                  className="mt-6 inline-flex items-center gap-2 px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-colors font-medium text-sm"
+                >
+                  <span>NEXT RANDOM GENRE</span>
+                  <IoArrowForward className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={handleNextGenre}
-                className="col-span-2 flex items-center justify-center gap-2 px-6 py-3 bg-rose-200 hover:bg-rose-300 text-zinc-900 rounded-lg transition-colors font-medium text-center"
-              >
-                <span>NEXT RANDOM GENRE</span>
-                <IoArrowForward className="w-5 h-5" />
-              </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div className="aspect-video w-full bg-zinc-800 rounded-lg overflow-hidden">
+          {/* Player and Tracklist Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div className="aspect-video w-full bg-zinc-800/50 rounded-lg overflow-hidden shadow-lg">
                 <YoutubePlayer
                   videoId={currentVideoId}
                   onVideoEnd={handleVideoEnd}
@@ -105,7 +108,7 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="bg-zinc-800/30 rounded-lg p-4">
               <TrackList
                 songs={songs.map((song) => ({
                   artist: song.artist,
