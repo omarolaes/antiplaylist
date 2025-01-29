@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { mainGenres } from "../../../../data/genres/genresList";
 import { supabase } from "@/lib/supabase";
-import { generateDescription } from "../generate-description/route";
-import { generateSongs } from "../generate-songs/route";
+import { generateDescription } from "@/lib/generateDescription";
+import { generateSongs } from "@/lib/generateSongs";
 
 // Helper function to flatten the genre list
 function getAllGenres() {

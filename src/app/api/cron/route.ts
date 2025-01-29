@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { generateSongs } from "../generate-songs/route";
 import { mainGenres } from "../../../../data/genres/genresList";
 import { supabase } from "@/lib/supabase";
+import { generateSongs } from "@/lib/generateSongs";
 
 // Helper function to get random items from array
 function getRandomItems<T>(array: T[], count: number): T[] {
