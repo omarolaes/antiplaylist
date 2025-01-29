@@ -60,7 +60,6 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
   const playerRef = useRef<YouTubePlayer | null>(null);
   const [hasError, setHasError] = useState(false);
   const [isAPIReady, setIsAPIReady] = useState(false);
-  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const playerId = useRef(`youtube-player-${videoId}`);
 
   const destroyPlayer = useCallback(() => {
@@ -99,15 +98,15 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
             // Video is paused or cued but not playing - likely blocked by autoplay policy
             clearInterval(checkPlayingInterval);
           }
-        } catch (e) {
+        } catch (error) {
           clearInterval(checkPlayingInterval);
         }
       }, 250);
 
       // Clear interval after 5 seconds to prevent memory leaks
       setTimeout(() => clearInterval(checkPlayingInterval), 5000);
-    } catch (e) {
-      console.warn("Autoplay failed:", e);
+    } catch (error) {
+      console.warn("Autoplay failed:", error);
     }
   }, []);
 
@@ -213,7 +212,6 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
     <div className="relative mb-2">
       <div 
         className="aspect-video overflow-hidden bg-zinc-950/95 rounded-lg backdrop-blur-sm"
-        onClick={() => setHasUserInteracted(true)}
       >
         <div id={playerId.current} className="w-full h-full" />
       </div>

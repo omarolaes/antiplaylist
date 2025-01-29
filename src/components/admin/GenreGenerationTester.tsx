@@ -3,9 +3,15 @@
 import { useState } from "react";
 import { mainGenres } from "../../../data/genres/genresList";
 
+interface Song {
+  artist: string;
+  song: string;
+  videoId?: string;
+}
+
 interface TestResult {
   success: boolean;
-  data?: any;
+  data?: string | Song[];
   error?: string;
 }
 
@@ -149,7 +155,7 @@ export default function GenreGenerationTester() {
           <div className="p-4 border rounded-md">
             <h2 className="text-lg font-semibold mb-2">Description Results</h2>
             {results.description.success ? (
-              <p className="text-green-500">{results.description.data}</p>
+              <p className="text-green-500">{results.description.data as string}</p>
             ) : (
               <p className="text-red-500">Error: {results.description.error}</p>
             )}
@@ -162,7 +168,7 @@ export default function GenreGenerationTester() {
             <h2 className="text-lg font-semibold mb-2">Songs Results</h2>
             {results.songs.success ? (
               <div className="space-y-2">
-                {results.songs.data.map((song: any, index: number) => (
+                {(results.songs.data as Song[]).map((song: Song, index: number) => (
                   <div key={`${song.artist}-${song.song}-${index}`} className="p-2 bg-white/5 rounded">
                     <p>
                       {song.artist} - {song.song}

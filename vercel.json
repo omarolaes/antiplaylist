@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/generate-daily-genres",
+      "path": "/api/cron",
       "schedule": "0 0 * * *"
     }
   ]
