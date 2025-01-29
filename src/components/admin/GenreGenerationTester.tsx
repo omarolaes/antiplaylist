@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { mainGenres } from "../../../data/genres/genresList";
+import Image from "next/image";
 
 interface Song {
   artist: string;
@@ -256,9 +257,11 @@ export default function GenreGenerationTester() {
                  results.description.data?.imageUrl && (
                   <div className="mt-4">
                     <h3 className="text-md font-medium mb-2">Generated Image</h3>
-                    <img 
+                    <Image 
                       src={results.description.data.imageUrl} 
                       alt={`Generated image for ${selectedGenre}`}
+                      width={500}
+                      height={300}
                       className="w-full max-w-md rounded-lg shadow-lg"
                     />
                   </div>
@@ -301,9 +304,11 @@ export default function GenreGenerationTester() {
             <h2 className="text-lg font-semibold mb-2">Image Results</h2>
             {results.image.success ? (
               <div className="space-y-4">
-                <img 
+                <Image 
                   src={results.image.data as string} 
                   alt={`Generated image for ${selectedGenre}`}
+                  width={500}
+                  height={300}
                   className="w-full max-w-md rounded-lg shadow-lg"
                 />
               </div>
