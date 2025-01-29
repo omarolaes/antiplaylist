@@ -85,7 +85,7 @@ Boards of Canada - Roygbiv`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-sonar-large-128k-online",
+        model: "sonar",
         messages: [
           {
             role: "user",
@@ -150,14 +150,14 @@ Boards of Canada - Roygbiv`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gpt-4",
+          model: "gpt-4o",
           messages: [
             {
               role: "user",
               content: validationPrompt,
             },
           ],
-          temperature: 0.5,
+          temperature: 0.4,
         }),
       }
     );

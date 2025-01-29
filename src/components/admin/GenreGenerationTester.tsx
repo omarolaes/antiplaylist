@@ -129,6 +129,11 @@ export default function GenreGenerationTester() {
       return;
     }
 
+    if (!results.songs?.success || !results.songs.data) {
+      alert("Please generate songs first");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const description = typeof results.description.data === 'string' 
@@ -144,7 +149,8 @@ export default function GenreGenerationTester() {
         },
         body: JSON.stringify({ 
           genre: selectedGenre,
-          description: description
+          description: description,
+          songs: results.songs.data
         }),
       });
       
@@ -216,7 +222,7 @@ export default function GenreGenerationTester() {
 
         <button
           onClick={testImage}
-          disabled={!selectedGenre || isLoading || !results.description?.success}
+          disabled={!selectedGenre || isLoading || !results.description?.success || !results.songs?.success}
           className="px-4 py-2 bg-purple-600 text-white rounded-md disabled:opacity-50"
         >
           {isLoading ? "Testing..." : "Test Image Generation"}

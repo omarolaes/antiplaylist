@@ -95,7 +95,7 @@ YOUR TASK - Craft a single, historically precise sentence under 250 characters t
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-sonar-large-128k-online",
+        model: "sonar",
         messages: [{
           role: "user",
           content: prompt,

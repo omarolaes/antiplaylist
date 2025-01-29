@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { generateDescription } from "@/app/api/generate-description/route";
 import { searchYouTubeVideos } from "@/lib/youtube";
 import { slugify } from "@/lib/utils/slugify";
+import { generateImage } from "@/lib/generateImage";
 
 
 export interface ParentGenreInfo {
@@ -98,7 +99,7 @@ Boards of Canada - Roygbiv`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-sonar-large-128k-online",
+        model: "sonar",
         messages: [
           {
             role: "user",
@@ -238,7 +239,7 @@ Return only the final 5 songs, one per line, no additional text.`;
 
     const { data: genreData, error: genreError } = await supabase
       .from("genres")
-      .select("id, name")
+      .select("id, name, description")
       .eq("slug", slug)
       .single();
 
@@ -279,7 +280,7 @@ Return only the final 5 songs, one per line, no additional text.`;
           genreName: formattedGenreName,
           slug: slug,
         });
-        return songsWithVideos;
+        return { songs: songsWithVideos };
       }
 
       console.log("Successfully created new genre:", {
@@ -322,6 +323,42 @@ Return only the final 5 songs, one per line, no additional text.`;
         }
 
         console.log("Successfully saved songs to database");
+
+        // Generate image using the songs for inspiration
+        try {
+          console.log("\n=== Generating Album Cover ===");
+          const imageUrl = await generateImage(genre, genreData?.description || description, songsWithVideos);
+          
+          if (imageUrl) {
+            // Update genre with image URL
+            const { error: updateError } = await supabase
+              .from("genres")
+              .update({ cover_image: imageUrl })
+              .eq("id", genreId);
+
+            if (updateError) {
+              console.error("Failed to update genre with image URL:", updateError);
+              // Don't throw here, but return the error with the songs
+              return {
+                songs: songsWithVideos,
+                imageError: `Failed to update genre with image URL: ${updateError.message}`
+              };
+            } else {
+              console.log("Successfully updated genre with image URL");
+              return {
+                songs: songsWithVideos,
+                imageUrl
+              };
+            }
+          }
+        } catch (imageError) {
+          console.error("Failed to generate image:", imageError);
+          // Return songs with the image error
+          return {
+            songs: songsWithVideos,
+            imageError: imageError instanceof Error ? imageError.message : "Failed to generate image"
+          };
+        }
       } catch (saveError) {
         console.error("Failed to save songs:", saveError);
         throw saveError;
@@ -332,7 +369,7 @@ Return only the final 5 songs, one per line, no additional text.`;
     }
 
     console.log("\n=== Song Generation Complete ===");
-    return songsWithVideos;
+    return { songs: songsWithVideos };
   } catch (error) {
     console.error("=== Error in Song Generation ===");
     console.error("Error details:", error);

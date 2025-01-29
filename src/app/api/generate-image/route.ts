@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { genre, description } = await request.json();
+    const { genre, description, songs } = await request.json();
 
     if (!genre || !description) {
       return NextResponse.json(
@@ -21,7 +21,34 @@ export async function POST(request: Request) {
       );
     }
 
-    const imageUrl = await generateImage(genre, description);
+    // If songs weren't provided, try to fetch them from the database
+    let songsToUse = songs;
+    if (!songsToUse) {
+      const { data: genreData } = await supabase
+        .from("genres")
+        .select("id")
+        .eq("slug", genre.toLowerCase())
+        .single();
+
+      if (genreData?.id) {
+        const { data: dbSongs } = await supabase
+          .from("genre_songs")
+          .select("artist, song")
+          .eq("genre_id", genreData.id);
+        
+        songsToUse = dbSongs;
+      }
+    }
+
+    // Only proceed if we have songs to use for inspiration
+    if (!songsToUse || songsToUse.length === 0) {
+      return NextResponse.json(
+        { error: "Songs are required for image generation. Please generate songs first." },
+        { status: 400 }
+      );
+    }
+
+    const imageUrl = await generateImage(genre, description, songsToUse);
 
     // Update the genres table with the image URL
     const { error: updateError } = await supabase

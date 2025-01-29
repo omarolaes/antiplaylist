@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
 import { ParentGenreInfo } from "./generateSongs";
-import { generateImage } from "@/lib/generateImage";
 
 export async function generateDescription(genre: string, parentInfo?: ParentGenreInfo) {
   try {
@@ -49,7 +48,7 @@ export async function generateDescription(genre: string, parentInfo?: ParentGenr
         })`
       : genre;
 
-    const prompt = `As a distinguished music historian, craft a definitive micro-description of ${genreContext} that will serve as the authoritative reference for music platforms and educational resources. Your description must withstand scrutiny from the most knowledgeable genre experts and musicologists.
+    const prompt = `As a distinguished music historian expert in new, emerging and old genres, craft a definitive micro-description of ${genreContext} that will serve as the authoritative reference for music platforms and educational resources. Your description must withstand scrutiny from the most knowledgeable genre experts and musicologists.
 
 CORE ELEMENTS TO INCLUDE:
 1. Historical Context: Precise emergence period (verified dates) and specific geographical origin
@@ -71,7 +70,7 @@ YOUR TASK - Craft a single, historically precise sentence under 250 characters t
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-sonar-large-128k-online",
+        model: "sonar",
         messages: [{
           role: "user",
           content: prompt,
@@ -142,28 +141,6 @@ YOUR TASK - Craft a single, historically precise sentence under 250 characters t
           throw new Error(`Failed to create genre: ${createError.message}`);
         }
       }
-    }
-
-    // Generate image using the description
-    try {
-      const imageUrl = await generateImage(genre, description);
-      
-      // Update genre in database with both description and image
-      const { error: updateError } = await supabase
-        .from("genres")
-        .update({ 
-          description,
-          cover_image: imageUrl,
-          updated_at: new Date().toISOString()
-        })
-        .eq("slug", genre.toLowerCase());
-
-      if (updateError) {
-        console.error("Error updating genre:", updateError);
-      }
-    } catch (imageError) {
-      console.error("Error generating image:", imageError);
-      // Continue with the process even if image generation fails
     }
 
     return description;

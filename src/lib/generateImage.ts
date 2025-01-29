@@ -1,11 +1,48 @@
 import Replicate from "replicate";
 import { supabase } from "./supabase";
 import { slugify } from "./utils/slugify";
+import { OpenAI } from "openai";
 
-export async function generateImage(genre: string, description: string) {
+export async function generateImage(genre: string, description: string, songs?: any[]) {
   try {
     console.log("=== Starting Image Generation Process ===");
-    console.log("Input:", { genre, description });
+    console.log("Input:", { genre, description, songs });
+
+    // Initialize OpenAI
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    // Create an enhanced prompt using GPT-4
+    const artistsContext = songs && songs.length > 0 
+      ? `. The cover should be inspired by the visual aesthetics and album art style of these artists: ${songs.map(s => s.artist).join(', ')}`
+      : '';
+
+    const userPrompt = `Create a prompt for generating a modern album cover for ${genre} music. The genre is described as: ${description}${artistsContext}`;
+
+    console.log("Generated GPT-4 prompt:", userPrompt);
+
+    const coverPromptResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert album cover designer who creates prompts for AI image generation. Focus on creating visually striking, professional album covers that capture the essence of music genres and the artistic style of the referenced artists. Return only the prompt, no explanations or comments."
+        },
+        {
+          role: "user",
+          content: userPrompt
+        }
+      ],
+      temperature: 0.7,
+    });
+
+    const coverPrompt = coverPromptResponse.choices[0].message.content;
+    if (!coverPrompt) {
+      throw new Error("No cover prompt generated");
+    }
+
+    console.log("Generated GPT-4 prompt:", coverPrompt);
 
     // Create a slug-based filename
     const slug = slugify(genre);
@@ -16,21 +53,16 @@ export async function generateImage(genre: string, description: string) {
       auth: process.env.REPLICATE_API_TOKEN,
     });
 
-    // Create a prompt for the image generation
-    const prompt = `Create a modern album cover art for ${genre} music that captures this description: ${description}. Style: Professional album artwork, high contrast, bold elements.`;
-
-    console.log("Generated prompt:", prompt);
-
-    // Generate image using Replicate (using Flux model)
+    // Generate image using Replicate with the enhanced prompt
     const output = await replicate.run("black-forest-labs/flux-schnell", {
       input: {
-        prompt,
+        prompt: coverPrompt,
         megapixels: "1",
         aspect_ratio: "1:1",
         num_inference_steps: 4,
         output_format: "jpg",
         output_quality: 90,
-        negative_prompt: "text, letters, words, logos, watermarks, low quality, blurry, amateur",
+        negative_prompt: "text, letters, words, logos, watermarks, low quality, blurry, amateur, multiple album covers, collage, website layout, ui elements, distorted proportions, incomplete design",
       },
     });
 
@@ -46,11 +78,6 @@ export async function generateImage(genre: string, description: string) {
       const base64 = Buffer.from(arrayBuffer).toString("base64");
       imageUrl = `data:image/webp;base64,${base64}`;
     }
-
-    console.log("Image generated:", imageUrl);
-
-    // Log the prediction URL from Replicate
-    console.log("Replicate prediction URL:", imageUrl);
 
     // Get the image data
     const imageResponse = await fetch(imageUrl);
