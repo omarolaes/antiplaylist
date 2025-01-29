@@ -13,34 +13,111 @@ export interface ParentGenreInfo {
 export async function generateSongs(genre: string, parentInfo?: ParentGenreInfo) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60000);
+  let genreId: string;
 
   try {
     console.log("=== Starting Song Generation Process ===");
     console.log("Input:", { genre, parentInfo });
 
-    // First, check if we already have songs for this genre
-    const { data: existingSongs } = await supabase
-      .from("genre_songs")
-      .select("artist, song, video_id")
-      .eq(
-        "genre_id",
-        (
-          await supabase
-            .from("genres")
-            .select("id")
-            .eq("slug", genre.toLowerCase())
-            .single()
-        ).data?.id
-      );
+    // First, try to get the existing genre
+    const { data: genreSongsData, error: fetchError } = await supabase
+      .from("genres")
+      .select("id, name, genre_songs(artist, song, video_id)")
+      .or(`slug.eq.${genre.toLowerCase()},name.ilike.${genre}`)
+      .single();
 
-    // If we have existing songs, return them immediately
-    if (existingSongs && existingSongs.length > 0) {
-      console.log("Found existing songs in database:", existingSongs);
-      return existingSongs.map((song) => ({
+    if (fetchError) {
+      // If not found, create new genre
+      const { data: newGenre, error: createError } = await supabase
+        .from("genres")
+        .insert([{
+          name: genre,
+          slug: genre.toLowerCase(),
+          updated_at: new Date().toISOString()
+        }])
+        .select("id")
+        .single();
+
+      if (createError) {
+        // If the error is a duplicate key constraint, get the existing genre ID
+        if (createError.code === '23505') {
+          const { data: existingGenre, error: fetchError } = await supabase
+            .from('genres')
+            .select('id')
+            .eq('slug', genre.toLowerCase())
+            .single();
+
+          if (fetchError) throw fetchError;
+          genreId = existingGenre.id;
+        } else {
+          console.error('Error creating genre:', createError);
+          throw new Error(`Failed to create genre: ${createError.message}`);
+        }
+      } else {
+        genreId = newGenre.id;
+      }
+    } else {
+      genreId = genreSongsData.id;
+    }
+
+    const existingSongs = genreSongsData?.genre_songs || [];
+
+    if (existingSongs.length > 0) {
+      console.log("Found existing songs:", existingSongs.length);
+      
+      // Map existing songs to the expected format
+      const formattedSongs = existingSongs.map(song => ({
         artist: song.artist,
         song: song.song,
-        videoId: song.video_id,
+        videoId: song.video_id
       }));
+
+      // Check for missing video IDs
+      const songsNeedingVideoIds = formattedSongs.filter(song => !song.videoId);
+      
+      if (songsNeedingVideoIds.length > 0) {
+        console.log("Fetching missing video IDs for songs:", songsNeedingVideoIds.length);
+        
+        // Search for missing video IDs
+        const videoIds = await searchYouTubeVideos(songsNeedingVideoIds);
+        
+        // Update songs with new video IDs
+        const updatedSongs = formattedSongs.map(song => {
+          if (!song.videoId) {
+            const cacheKey = `${song.artist}-${song.song}`.toLowerCase();
+            return {
+              ...song,
+              videoId: videoIds[cacheKey] || null
+            };
+          }
+          return song;
+        });
+
+        // Update database with new video IDs
+        const songsToUpdate = updatedSongs
+          .filter(song => song.videoId)
+          .map(song => ({
+            genre_id: genreSongsData?.id,
+            artist: song.artist,
+            song: song.song,
+            video_id: song.videoId
+          }));
+
+        if (songsToUpdate.length > 0) {
+          const { error: updateError } = await supabase
+            .from("genre_songs")
+            .upsert(songsToUpdate);
+
+          if (updateError) {
+            console.error("Failed to update video IDs:", updateError);
+          }
+        }
+
+        return { songs: updatedSongs.filter(song => song.videoId) };
+      }
+
+      // If all songs have video IDs, return them as is
+      return { songs: formattedSongs };
     }
 
     // If no existing songs, first ensure we have a description
@@ -237,15 +314,13 @@ Return only the final 5 songs, one per line, no additional text.`;
     console.log("\n=== Database Operations ===");
     const slug = slugify(genre);
 
-    const { data: genreData, error: genreError } = await supabase
+    const { data: existingGenreData, error: genreError } = await supabase
       .from("genres")
       .select("id, name, description")
       .eq("slug", slug)
       .single();
 
-    let genreId;
-
-    if (genreError || !genreData) {
+    if (genreError || !existingGenreData) {
       console.log("Creating new genre entry...");
       // Format the genre name properly (first letter of each word capitalized)
       const formattedGenreName = genre
@@ -291,8 +366,8 @@ Return only the final 5 songs, one per line, no additional text.`;
 
       genreId = newGenre.id;
     } else {
-      console.log("Found existing genre:", genreData);
-      genreId = genreData.id;
+      console.log("Found existing genre:", existingGenreData);
+      genreId = existingGenreData.id;
     }
 
     if (!genreId) {
@@ -301,75 +376,49 @@ Return only the final 5 songs, one per line, no additional text.`;
 
     // Log song saving
     console.log("\n=== Saving Songs ===");
-    if (songsWithVideos.length > 0) {
-      try {
-        const songsToSave = songsWithVideos.map(
-          (song: { artist: string; song: string; videoId: string }) => ({
-            genre_id: genreId,
-            artist: song.artist,
-            song: song.song,
-            video_id: song.videoId,
-          })
-        );
-        console.log("Saving songs to database:", songsToSave);
+    try {
+      // Get existing songs for this genre to check for duplicates
+      const { data: existingSongs } = await supabase
+        .from("genre_songs")
+        .select('video_id')
+        .eq('genre_id', genreId);
 
+      const existingVideoIds = new Set(existingSongs?.map(song => song.video_id) || []);
+
+      // Filter out songs that already exist
+      const songsToSave = songsWithVideos
+        .filter((song: { artist: string; song: string; videoId: string }) => 
+          !existingVideoIds.has(song.videoId)
+        )
+        .map((song: { artist: string; song: string; videoId: string }) => ({
+          genre_id: genreId,
+          artist: song.artist,
+          song: song.song,
+          video_id: song.videoId,
+        }));
+
+      console.log("Saving new songs to database:", songsToSave);
+
+      if (songsToSave.length > 0) {
         const { error: upsertError } = await supabase
           .from("genre_songs")
           .upsert(songsToSave);
 
         if (upsertError) {
+          // Don't throw the error, just log it and continue
           console.error("Failed to save songs:", upsertError);
-          throw upsertError;
+        } else {
+          console.log("Successfully saved new songs to database");
         }
-
-        console.log("Successfully saved songs to database");
-
-        // Generate image using the songs for inspiration
-        try {
-          console.log("\n=== Generating Album Cover ===");
-          const imageUrl = await generateImage(genre, genreData?.description || description, songsWithVideos);
-          
-          if (imageUrl) {
-            // Update genre with image URL
-            const { error: updateError } = await supabase
-              .from("genres")
-              .update({ cover_image: imageUrl })
-              .eq("id", genreId);
-
-            if (updateError) {
-              console.error("Failed to update genre with image URL:", updateError);
-              // Don't throw here, but return the error with the songs
-              return {
-                songs: songsWithVideos,
-                imageError: `Failed to update genre with image URL: ${updateError.message}`
-              };
-            } else {
-              console.log("Successfully updated genre with image URL");
-              return {
-                songs: songsWithVideos,
-                imageUrl
-              };
-            }
-          }
-        } catch (imageError) {
-          console.error("Failed to generate image:", imageError);
-          // Return songs with the image error
-          return {
-            songs: songsWithVideos,
-            imageError: imageError instanceof Error ? imageError.message : "Failed to generate image"
-          };
-        }
-      } catch (saveError) {
-        console.error("Failed to save songs:", saveError);
-        throw saveError;
+      } else {
+        console.log("No new songs to save - all songs already exist");
       }
-    } else {
-      console.error("No songs with video IDs to save");
-      throw new Error("No valid songs found with video IDs");
-    }
 
-    console.log("\n=== Song Generation Complete ===");
-    return { songs: songsWithVideos };
+      return { songs: songsWithVideos }; // Return songs even if save fails
+    } catch (saveError) {
+      console.error("Failed to save songs:", saveError);
+      return { songs: songsWithVideos }; // Return songs even if there's an error
+    }
   } catch (error) {
     console.error("=== Error in Song Generation ===");
     console.error("Error details:", error);

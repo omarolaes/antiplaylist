@@ -3,7 +3,12 @@ import { supabase } from "./supabase";
 import { slugify } from "./utils/slugify";
 import { OpenAI } from "openai";
 
-export async function generateImage(genre: string, description: string, songs?: any[]) {
+interface Song {
+  artist: string;
+  // Add other properties if needed
+}
+
+export async function generateImage(genre: string, description: string, songs?: Song[]) {
   try {
     console.log("=== Starting Image Generation Process ===");
     console.log("Input:", { genre, description, songs });
@@ -123,7 +128,6 @@ export async function generateImage(genre: string, description: string, songs?: 
       .getPublicUrl(uploadData.path).data.publicUrl;
 
     console.log("Generated image URLs:", {
-      replicateUrl: imageUrl,
       supabaseUrl: publicUrl
     });
 

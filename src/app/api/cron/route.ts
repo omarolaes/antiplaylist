@@ -69,9 +69,10 @@ export async function GET(request: Request) {
     // Process the genre
     try {
       console.log(`[Cron] Processing genre: ${genreToProcess}`);
-      const songs = await generateSongs(genreToProcess);
+      const songsResponse = await generateSongs(genreToProcess);
+      const songs = Array.isArray(songsResponse) ? songsResponse : songsResponse.songs;
       
-      if (songs && songs.length > 0) {
+      if (songs && Array.isArray(songs) && songs.length > 0) {
         processedGenres.push({
           genre: genreToProcess,
           songCount: songs.length

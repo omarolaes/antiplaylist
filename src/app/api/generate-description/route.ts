@@ -73,7 +73,7 @@ export async function generateDescription(genre: string, parentInfo?: ParentGenr
         })`
       : genre;
 
-    const prompt = `As a distinguished music historian, craft a definitive micro-description of ${genreContext} that will serve as the authoritative reference for music platforms and educational resources. Your description must withstand scrutiny from the most knowledgeable genre experts and musicologists.
+    const prompt = `As a distinguished music historian expert in new, emerging and old genres, craft a definitive micro-description of ${genreContext} that will serve as the authoritative reference for music platforms and educational resources. Your description must withstand scrutiny from the most knowledgeable genre experts and musicologists.
 
 CORE ELEMENTS TO INCLUDE:
 1. Historical Context: Precise emergence period (verified dates) and specific geographical origin

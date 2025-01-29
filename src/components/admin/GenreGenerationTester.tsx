@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { mainGenres } from "../../../data/genres/genresList";
 import Image from "next/image";
 
 interface Song {
@@ -271,18 +270,22 @@ export default function GenreGenerationTester() {
             <h2 className="text-lg font-semibold mb-2">Songs Results</h2>
             {results.songs.success ? (
               <div className="space-y-2">
-                {(results.songs.data as Song[]).map((song: Song, index: number) => (
-                  <div key={`${song.artist}-${song.song}-${index}`} className="p-2 bg-white/5 rounded">
-                    <p>
-                      {song.artist} - {song.song}
-                    </p>
-                    {song.videoId && (
-                      <p className="text-sm text-gray-400">
-                        Video ID: {song.videoId}
+                {Array.isArray(results.songs.data) ? (
+                  results.songs.data.map((song: Song, index: number) => (
+                    <div key={`${song.artist}-${song.song}-${index}`} className="p-2 bg-white/5 rounded">
+                      <p>
+                        {song.artist} - {song.song}
                       </p>
-                    )}
-                  </div>
-                ))}
+                      {song.videoId && (
+                        <p className="text-sm text-gray-400">
+                          Video ID: {song.videoId}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-yellow-500">No songs data available</p>
+                )}
               </div>
             ) : (
               <p className="text-red-500">Error: {results.songs.error}</p>

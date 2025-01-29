@@ -85,9 +85,10 @@ export async function POST(request: Request) {
         const description = await generateDescription(genre);
         
         // Then generate songs
-        const songs = await generateSongs(genre);
+        const songsResponse = await generateSongs(genre);
+        const songs = Array.isArray(songsResponse) ? songsResponse : songsResponse.songs;
         
-        if (songs && songs.length > 0) {
+        if (songs && Array.isArray(songs) && songs.length > 0) {
           processedGenres.push({
             genre,
             description,

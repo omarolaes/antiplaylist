@@ -7,6 +7,7 @@ import TrackList from "@/components/player/TrackList";
 import Header from "@/components/home/Header";
 import Footer from "@/components/home/Footer";
 import { IoArrowForward } from "react-icons/io5";
+import Image from 'next/image';
 
 interface Genre {
   id: string;
@@ -70,11 +71,14 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
           <div className="relative mb-6 p-6 md:p-8 rounded-xl bg-gradient-to-b from-rose-500/20 to-zinc-900">
             <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
               {genre.cover_image && (
-                <div className="shrink-0 w-48 h-48 md:w-56 md:h-56 shadow-2xl rounded-md overflow-hidden">
-                  <img 
+                <div className="shrink-0 w-48 h-48 md:w-56 md:h-56 shadow-2xl rounded-md overflow-hidden relative">
+                  <Image 
                     src={genre.cover_image} 
                     alt={`${genre.name} cover art`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 192px, 224px"
+                    priority
                   />
                 </div>
               )}
