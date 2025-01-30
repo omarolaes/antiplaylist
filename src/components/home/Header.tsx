@@ -4,9 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth-context";
 
 const Header = () => {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const handleSignIn = async () => {
     try {
@@ -25,6 +27,10 @@ const Header = () => {
       console.error("Error:", error);
       alert("Failed to start sign in process. Please try again.");
     }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
@@ -62,19 +68,34 @@ const Header = () => {
 
           {/* Search and Actions */}
           <div className="flex items-center gap-4">
-
-
-            {/* Authentication Action */}
-            <button
-              onClick={handleSignIn}
-              className="inline-flex items-center justify-center h-9 px-4 rounded-full 
-                       bg-white/5 hover:bg-white/10 border border-white/5
-                       text-sm font-medium text-white/90 hover:text-white 
-                       transition-all gap-2"
-            >
-              <FcGoogle className="w-4 h-4" />
-              <span>Sign in with Google</span>
-            </button>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/profile"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    pathname === '/profile'
+                      ? "bg-white/10 text-white"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                    {user.email?.[0].toUpperCase()}
+                  </div>
+                  <span>Profile</span>
+                </Link>
+              </div>
+            ) : (
+              <button
+                onClick={handleSignIn}
+                className="inline-flex items-center justify-center h-9 px-4 rounded-full 
+                         bg-white/5 hover:bg-white/10 border border-white/5
+                         text-sm font-medium text-white/90 hover:text-white 
+                         transition-all gap-2"
+              >
+                <FcGoogle className="w-4 h-4" />
+                <span>Sign in with Google</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

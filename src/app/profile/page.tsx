@@ -117,6 +117,10 @@ export default function ProfilePage() {
     fetchLikedSongs();
   }, [user, fetchLikedSongs]);
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
@@ -142,19 +146,45 @@ export default function ProfilePage() {
       <Header />
       <main className="max-w-[1800px] mx-auto">
         {/* Hero Banner */}
-        <div className="relative h-64">
+        <div className="relative h-72">
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black opacity-70" />
           <div className="relative h-full flex flex-col justify-end p-8 md:p-12">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center">
-                <TbUser className="w-8 h-8 text-white" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-24 rounded-full bg-zinc-800/50 flex items-center justify-center">
+                  <span className="text-3xl font-bold text-white">
+                    {user.email?.[0].toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-bold text-white">
+                    {user.email?.split('@')[0]}
+                  </h1>
+                  <p className="text-white/60 mt-1">Your Music Collection</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white">
-                  {user.email?.split('@')[0]}
-                </h1>
-                <p className="text-white/60 mt-1">Your Music Collection</p>
-              </div>
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 
+                         text-white/80 hover:text-white text-sm font-medium 
+                         transition-all border border-white/10"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Bar */}
+        <div className="border-b border-white/5 bg-zinc-900/30">
+          <div className="flex items-center gap-8 px-8 md:px-12 py-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-white">{likedSongs.length}</p>
+              <p className="text-sm text-white/60">Liked Songs</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-white">{Object.keys(groupedSongs).length}</p>
+              <p className="text-sm text-white/60">Genres</p>
             </div>
           </div>
         </div>
