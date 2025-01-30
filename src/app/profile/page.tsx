@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
@@ -139,67 +138,81 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-900">
+    <div className="min-h-screen bg-black">
       <Header />
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-8">
-          <TbHeart className="w-8 h-8 text-pink-500" />
-          <h1 className="text-3xl font-medium text-zinc-950">Your Liked Songs</h1>
-        </div>
-        
-        {currentVideoId && (
-          <div className="mb-8">
-            <YoutubePlayer
-              videoId={currentVideoId}
-              onVideoEnd={() => setCurrentVideoId(null)}
-              onLikeChange={fetchLikedSongs}
-            />
-          </div>
-        )}
-
-        {Object.entries(groupedSongs).map(([genreName, songs]) => (
-          <div key={genreName} className="mb-8">
-            <h2 className="text-xl font-medium text-white mb-4">{genreName}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {songs.map((song) => (
-                <div
-                  key={song.id}
-                  className="p-3 border border-white/10 rounded-lg"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <TbMusic className="w-4 h-4 text-white" />
-                        <h3 className="font-medium text-white">{song.song}</h3>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-white/50 mt-1">
-                        <TbUser className="w-4 h-4" />
-                        <span>{song.artist}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setCurrentVideoId(song.video_id)}
-                      className="px-4 py-2 bg-white/10 text-white rounded hover:scale-95 transition-all flex items-center gap-2"
-                    >
-                      <TfiControlPlay className="w-4 h-4" />
-                      Play
-                    </button>
-                  </div>
-                </div>
-              ))}
+      <main className="max-w-[1800px] mx-auto">
+        {/* Hero Banner */}
+        <div className="relative h-64">
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black opacity-70" />
+          <div className="relative h-full flex flex-col justify-end p-8 md:p-12">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center">
+                <TbUser className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white">
+                  {user.email?.split('@')[0]}
+                </h1>
+                <p className="text-white/60 mt-1">Your Music Collection</p>
+              </div>
             </div>
           </div>
-        ))}
+        </div>
 
-        {likedSongs.length === 0 && (
-          <div className="text-center py-12 border border-white/10 rounded-lg">
-            <TbHeart className="w-12 h-12 text-white mx-auto mb-3" />
-            <p className="text-white/50">
-              You haven&apos;t liked any songs yet. Start exploring and like some songs!
-            </p>
+        <div className="px-4 md:px-8 py-8">
+          {currentVideoId && (
+            <div className="mb-12 max-w-3xl mx-auto">
+              <YoutubePlayer
+                videoId={currentVideoId}
+                onVideoEnd={() => setCurrentVideoId(null)}
+                onLikeChange={fetchLikedSongs}
+              />
+            </div>
+          )}
+
+          <div className="space-y-12">
+            {Object.entries(groupedSongs).map(([genreName, songs]) => (
+              <section key={genreName}>
+                <h2 className="text-2xl font-bold text-white mb-6">{genreName}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {songs.map((song) => (
+                    <div
+                      key={song.id}
+                      className="group bg-zinc-800/30 rounded-xl p-4 hover:bg-zinc-800/50 transition-all duration-300"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-zinc-700/50 flex items-center justify-center flex-shrink-0">
+                          <TbMusic className="w-6 h-6 text-white/80" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-white truncate">{song.song}</h3>
+                          <p className="text-sm text-white/50 truncate">{song.artist}</p>
+                        </div>
+                        <button
+                          onClick={() => setCurrentVideoId(song.video_id)}
+                          className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+                        >
+                          <TfiControlPlay className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            {likedSongs.length === 0 && (
+              <div className="text-center py-16 rounded-2xl bg-zinc-800/30">
+                <TbHeart className="w-16 h-16 text-white/20 mx-auto mb-4" />
+                <h3 className="text-xl font-medium text-white mb-2">No Liked Songs Yet</h3>
+                <p className="text-white/50 max-w-md mx-auto">
+                  Start exploring and like some songs to build your collection!
+                </p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 } 
