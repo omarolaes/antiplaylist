@@ -22,7 +22,7 @@ export async function generateImage(genre: string, description: string) {
       messages: [
         {
           role: "system",
-          content: `You are a master of creating text-to-image prompts for product photos. The image generated should have the lighting, colors, style, and composition of a product photo similar to IKEA. Return just the text-to-image prompt and nothing else.`,
+          content: `You are a master of creating text-to-image prompts for product photos. The image generated should have the lighting, colors, style, and composition of a product photo similar to IKEA. Return just the text-to-image prompt and nothing else. Make sure the image should look realistic and not like a painting.`,
         },
         {
           role: "user",
@@ -43,7 +43,9 @@ export async function generateImage(genre: string, description: string) {
 
     // Create a slug-based filename
     const slug = slugify(genre);
-    const filename = `${slug}.png`;
+    const timestamp = Date.now();
+    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const filename = `${slug}-${timestamp}-${randomNum}.png`;
 
     // Initialize Replicate
     const replicate = new Replicate({
@@ -52,7 +54,7 @@ export async function generateImage(genre: string, description: string) {
     console.log("Cover Prompt: ", coverPrompt);
 
     // Refined prompt with explicit Renaissance style instructions
-    const refinedPrompt = `${coverPrompt}. Ensure the image embodies the Renaissance art style, featuring chiaroscuro lighting, realistic human figures, and classical architectural elements reminiscent of artists like Caravaggio and Michelangelo.`;
+    const refinedPrompt = `${coverPrompt}. Make sure it looks like a real photo.`;
 
     // Updated Replicate run with increased inference steps
     const output = await replicate.run("black-forest-labs/flux-schnell", {
@@ -65,7 +67,7 @@ export async function generateImage(genre: string, description: string) {
         output_format: "jpg",
         output_quality: 95,
         negative_prompt:
-          "text, letters, words, logos, watermarks, low quality, blurry, amateur, multiple album covers, collage, website layout, ui elements, distorted proportions, incomplete design, no text or logos, vinyls, headphones, musical notes, instruments, microphone, speakers, amplifiers, turntables, vinyl records, cassette tapes, CDs, MP3 players",
+          "text, letters, words, logos, watermarks, low quality, blurry, amateur, multiple album covers, collage, website layout, ui elements, distorted proportions, incomplete design, no text or logos, vinyls, headphones, musical notes, instruments, microphone, speakers, amplifiers, turntables, vinyl records, cassette tapes, CDs, MP3 players, illustration",
       },
     });
 
@@ -92,25 +94,13 @@ export async function generateImage(genre: string, description: string) {
       type: imageData.type,
     });
 
-    // Before uploading, delete any existing file with the same name
-    const { data: existingFiles, error: listError } = await supabase.storage
-      .from("genre-covers")
-      .list();
-
-    if (!listError && existingFiles) {
-      const existingFile = existingFiles.find(file => file.name === filename);
-      if (existingFile) {
-        await supabase.storage.from("genre-covers").remove([filename]);
-      }
-    }
-
-    // Upload to Supabase storage with the slug-based filename
+    // No need to delete old files anymore since we're using unique filenames
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("genre-covers")
       .upload(filename, imageData, {
         contentType: "image/png",
         cacheControl: "3600",
-        upsert: true, // Enable upsert to replace existing files
+        upsert: false, // Changed to false since we're using unique filenames
       });
 
     if (uploadError) {
@@ -118,13 +108,34 @@ export async function generateImage(genre: string, description: string) {
       throw new Error(`Failed to upload image: ${uploadError.message}`);
     }
 
-    // Get the public URL and ensure it exists
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("genre-covers").getPublicUrl(uploadData.path);
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from("genre-covers")
+      .getPublicUrl(uploadData.path);
 
-    if (!publicUrl) {
-      throw new Error("Failed to get public URL for uploaded image");
+    // Optional: Clean up old images after successful upload
+    try {
+      const { data: existingFiles } = await supabase.storage
+        .from("genre-covers")
+        .list();
+
+      if (existingFiles) {
+        const oldFiles = existingFiles
+          .filter(file => file.name.startsWith(`${slug}-`) && file.name !== filename)
+          .map(file => file.name);
+
+        // Keep only the last 3 versions
+        const filesToDelete = oldFiles.slice(0, -2);
+        
+        if (filesToDelete.length > 0) {
+          await supabase.storage
+            .from("genre-covers")
+            .remove(filesToDelete);
+        }
+      }
+    } catch (cleanupError) {
+      console.error("Error cleaning up old files:", cleanupError);
+      // Don't throw error here as the main operation succeeded
     }
 
     console.log("Generated image URL:", publicUrl);
