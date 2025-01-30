@@ -56,19 +56,28 @@ interface YoutubePlayerProps {
   onLikeChange?: () => void;
 }
 
+// Keep the global API loaded flag
+let isYouTubeAPILoaded = false;
+
 const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) => {
+  console.log('YoutubePlayer rendered with videoId:', videoId);
+  
   const playerRef = useRef<YouTubePlayer | null>(null);
   const [hasError, setHasError] = useState(false);
-  const [isAPIReady, setIsAPIReady] = useState(false);
+  const [isAPIReady, setIsAPIReady] = useState(isYouTubeAPILoaded);
+  // Use a stable ID that won't change during hydration
   const playerId = useRef(`youtube-player-${videoId}`);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const destroyPlayer = useCallback(() => {
+    console.log('Destroying player instance');
     if (playerRef.current) {
       try {
         playerRef.current.destroy();
         playerRef.current = null;
-      } catch {
-        console.warn("Error cleaning up player:");
+        console.log('Player destroyed successfully');
+      } catch (error) {
+        console.error("Error destroying player:", error);
       }
     }
   }, []);
@@ -111,11 +120,25 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
   }, []);
 
   const createPlayer = useCallback(() => {
-    if (!videoId || !isAPIReady) return;
-    setHasError(false);
+    console.log('Attempting to create player:', {
+      videoId,
+      isAPIReady,
+      containerId: playerId.current
+    });
 
-    const container = document.getElementById(playerId.current);
-    if (!container) {
+    if (!videoId || !isAPIReady) {
+      console.log('Cannot create player - missing requirements:', {
+        hasVideoId: !!videoId,
+        isAPIReady
+      });
+      return;
+    }
+
+    destroyPlayer();
+
+    // Use containerRef instead of getElementById
+    if (!containerRef.current) {
+      console.error('Player container not found');
       setHasError(true);
       return;
     }
@@ -123,10 +146,11 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
     try {
       const YT = (window as unknown as YouTubeWindow).YT;
       if (!YT || !YT.Player) {
-        console.warn("YouTube API not ready yet");
+        console.error("YouTube API not available");
         return;
       }
 
+      console.log('Creating new YT.Player instance');
       playerRef.current = new YT.Player(playerId.current, {
         height: "100%",
         width: "100%",
@@ -142,17 +166,19 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
         },
         events: {
           onReady: (event: { target: YouTubePlayer }) => {
-            console.log("Player ready");
+            console.log("Player ready event fired");
             attemptAutoplay(event.target);
           },
           onStateChange: (event: YouTubeEvent) => {
+            console.log('Player state changed:', event.data);
             const YT = (window as unknown as YouTubeWindow).YT;
             if (event.data === YT.PlayerState.ENDED) {
+              console.log('Video ended, calling onVideoEnd');
               onVideoEnd?.();
             }
           },
           onError: (event: YouTubeEvent) => {
-            console.warn("YouTube player error:", event);
+            console.error("YouTube player error:", event);
             setHasError(true);
           },
         },
@@ -161,44 +187,53 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
       console.error("Error creating YouTube player:", error);
       setHasError(true);
     }
-  }, [videoId, onVideoEnd, isAPIReady, attemptAutoplay]);
+  }, [videoId, isAPIReady, destroyPlayer, attemptAutoplay, onVideoEnd]);
 
+  // Initialize YouTube API
   useEffect(() => {
-    if (!isAPIReady) return;
-    destroyPlayer();
-    createPlayer();
-    
-    return () => destroyPlayer();
-  }, [videoId, createPlayer, destroyPlayer, isAPIReady]);
-
-  useEffect(() => {
-    if (document.getElementById("youtube-iframe-api")) {
-      if ((window as unknown as YouTubeWindow).YT) {
-        setIsAPIReady(true);
-      }
+    if (isYouTubeAPILoaded) {
+      console.log('YouTube API already loaded, setting ready state');
+      setIsAPIReady(true);
       return;
     }
 
-    const tag = document.createElement("script");
-    tag.id = "youtube-iframe-api";
-    tag.src = "https://www.youtube.com/iframe_api";
-    
-    tag.onload = () => {
-      (window as unknown as YouTubeWindow).onYouTubeIframeAPIReady = () => {
-        setIsAPIReady(true);
+    const loadYouTubeAPI = () => {
+      if (document.getElementById("youtube-iframe-api")) return;
+
+      console.log('Injecting YouTube API script');
+      const tag = document.createElement("script");
+      tag.id = "youtube-iframe-api";
+      tag.src = "https://www.youtube.com/iframe_api";
+      
+      tag.onload = () => {
+        console.log('YouTube API script loaded');
+        (window as unknown as YouTubeWindow).onYouTubeIframeAPIReady = () => {
+          console.log('YouTube API ready');
+          isYouTubeAPILoaded = true;
+          setIsAPIReady(true);
+        };
       };
+
+      document.head.appendChild(tag);
     };
 
-    document.head.appendChild(tag);
-
+    // Delay the API loading slightly to ensure hydration is complete
+    const timeoutId = setTimeout(loadYouTubeAPI, 0);
     return () => {
+      clearTimeout(timeoutId);
       destroyPlayer();
-      const scriptTag = document.getElementById("youtube-iframe-api");
-      if (scriptTag) {
-        scriptTag.remove();
-      }
     };
   }, [destroyPlayer]);
+
+  // Create/update player when videoId changes
+  useEffect(() => {
+    console.log('videoId changed effect triggered:', videoId);
+    if (isAPIReady && containerRef.current) {
+      // Small delay to ensure DOM is ready
+      const timeoutId = setTimeout(createPlayer, 0);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [videoId, createPlayer, isAPIReady]);
 
   if (hasError) {
     return (
@@ -213,7 +248,11 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
       <div 
         className="aspect-video overflow-hidden bg-zinc-950/95 rounded-lg backdrop-blur-sm"
       >
-        <div id={playerId.current} className="w-full h-full" />
+        <div 
+          ref={containerRef}
+          id={playerId.current} 
+          className="w-full h-full" 
+        />
       </div>
     </div>
   );

@@ -31,12 +31,17 @@ interface GenreContentProps {
 }
 
 export default function GenreContent({ genre, songs }: GenreContentProps) {
+  console.log('GenreContent rendered with songs:', songs);
+  
   const router = useRouter();
-  const [currentVideoId, setCurrentVideoId] = useState<string>(
-    songs[0]?.video_id || ""
-  );
+  const [currentVideoId, setCurrentVideoId] = useState<string>(() => {
+    const initialVideo = songs[0]?.video_id || "";
+    console.log('Setting initial video ID:', initialVideo);
+    return initialVideo;
+  });
 
   const handleTrackSelect = (videoId: string) => {
+    console.log('Track selected:', videoId);
     setCurrentVideoId(videoId);
   };
 
