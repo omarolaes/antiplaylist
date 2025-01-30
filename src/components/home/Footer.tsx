@@ -1,8 +1,6 @@
 import Link from 'next/link';
-import { FaGithub, FaTwitter } from 'react-icons/fa';
 import { IoLogoGithub } from 'react-icons/io';
 import { TbX } from 'react-icons/tb';
-import { TfiGithub } from 'react-icons/tfi';
 
 export interface FooterProps {
   availableGenres?: { name: string; slug: string }[];

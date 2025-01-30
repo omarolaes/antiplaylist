@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IoSearch } from "react-icons/io5";
 import { FcGoogle } from "react-icons/fc";
 import { supabase } from "@/lib/supabase";
 

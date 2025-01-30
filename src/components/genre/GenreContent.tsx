@@ -7,7 +7,6 @@ import TrackList from "@/components/player/TrackList";
 import Header from "@/components/home/Header";
 import Footer from "@/components/home/Footer";
 import { IoShuffle } from "react-icons/io5";
-import { HiPlay } from "react-icons/hi2";
 import Image from "next/image";
 
 interface Genre {
