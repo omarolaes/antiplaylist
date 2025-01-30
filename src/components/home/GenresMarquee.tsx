@@ -90,7 +90,7 @@ const GenresMarquee: React.FC = () => {
                 alt={genre.name}
                 fill
                 className="object-cover transition-all duration-500 group-hover:scale-110"
-                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
             ) : (
               <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 to-zinc-900" />
