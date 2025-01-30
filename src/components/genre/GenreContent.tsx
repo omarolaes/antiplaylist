@@ -97,51 +97,62 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
             </div>
           </div>
           {/* Hero Section with Dynamic Gradient */}
-          <div className="relative">
-            <div className="relative z-10">
-              {/* Next Genre Button - Moved to top right */}
-              <div className="absolute top-0 right-0">
-                <button
-                  onClick={handleNextGenre}
-                  className="inline-flex items-center gap-3 px-10 py-4 bg-white text-black rounded-full hover:bg-white/90 transition-all transform hover:scale-105 font-medium text-xl shadow-lg"
-                >
-                  <span>Next Genre</span>
-                  <IoShuffle className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="flex flex-col md:flex-row gap-8 items-start">
-                {genre.cover_image && (
-                  <div className="relative group">
-                    <div className="shrink-0 w-48 h-48 md:w-80 md:h-80 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-                      <Image
-                        src={genre.cover_image}
-                        alt={`${genre.name} cover`}
-                        fill
-                        className="object-cover rounded-xl"
-                        sizes="(max-width: 768px) 192px, 280px"
-                        priority
-                      />
-                    </div>
+          <div className="relative space-y-6 md:space-y-0">
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              {genre.cover_image && (
+                <div className="relative group w-full md:w-auto">
+                  <div className="w-full aspect-square md:w-80 md:h-80 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+                    <Image
+                      src={genre.cover_image}
+                      alt={`${genre.name} cover`}
+                      fill
+                      className="object-cover rounded-xl"
+                      sizes="(max-width: 768px) 100vw, 320px"
+                      priority
+                    />
                   </div>
-                )}
+                </div>
+              )}
 
-                <div className="flex flex-col justify-between flex-grow">
+              <div className="flex flex-col justify-between flex-grow">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
                   <div>
                     <div className="flex items-center gap-2 text-white/60 uppercase tracking-wider text-xs font-medium mb-2">
                       Featured Genre
                     </div>
-                    <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
                       {genre.name}
                     </h1>
                     {genre.description && (
-                      <p className="text-white/70 text-base max-w-2xl leading-relaxed">
+                      <p className="text-white/70 text-sm md:text-base max-w-2xl leading-relaxed">
                         {genre.description}
                       </p>
                     )}
                   </div>
+                  
+                  {/* Next Genre Button - Now inside the content area for desktop */}
+                  <div className="hidden md:block">
+                    <button
+                      onClick={handleNextGenre}
+                      className="inline-flex items-center gap-3 px-8 py-3 md:px-10 md:py-4 bg-white text-black rounded-full hover:bg-white/90 transition-all transform hover:scale-105 font-medium text-lg md:text-xl shadow-lg whitespace-nowrap"
+                    >
+                      <span>Next Genre</span>
+                      <IoShuffle className="w-5 h-5 md:w-6 md:h-6" />
+                    </button>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            {/* Next Genre Button - Mobile only version */}
+            <div className="md:hidden flex justify-end w-full">
+              <button
+                onClick={handleNextGenre}
+                className="w-full sm:w-auto inline-flex items-center gap-3 px-8 py-3 md:px-10 md:py-4 bg-white text-black rounded-full hover:bg-white/90 transition-all transform hover:scale-105 font-medium text-lg md:text-xl shadow-lg"
+              >
+                <span>Next Genre</span>
+                <IoShuffle className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
             </div>
           </div>
         </div>

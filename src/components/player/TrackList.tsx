@@ -11,7 +11,6 @@ interface TrackListProps {
   isLiked?: boolean;
   onLike?: () => void;
   onDelete?: (videoId: string) => void;
-  onAddSongs?: () => void;
 }
 
 const TrackList: React.FC<TrackListProps> = ({ 
@@ -21,29 +20,16 @@ const TrackList: React.FC<TrackListProps> = ({
   onDelete,
   onLike,
   isLiked,
-  onAddSongs 
 }) => {
   if (songs.length === 0) return null;
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-4 border-b border-white/5">
-        <h2 className="text-base font-medium text-white/90">Queue</h2>
-        {onAddSongs && (
-          <button 
-            onClick={onAddSongs}
-            className="text-sm text-white/60 hover:text-white transition-colors px-3 py-1.5 rounded-full bg-white/5"
-          >
-            Add Songs
-          </button>
-        )}
-      </div>
-
       <div className="flex-1 overflow-y-auto">
         {songs.map((song, index) => (
           <div
             key={`${song.videoId}-${index}`}
-            className={`flex items-center gap-3 px-4 py-2.5 ${
+            className={`flex rounded-xl items-center gap-3 px-4 py-2.5 ${
               currentIndex === index
                 ? "bg-white/10"
                 : "hover:bg-white/5"
