@@ -98,17 +98,38 @@ export async function GET(request: Request) {
         
         // Add additional logging for debugging
         console.log("[Cron] Checking for genre description before image generation");
-        const genreDescription = await supabase
+        const { data: genreData, error: genreError } = await supabase
           .from("genres")
           .select("description")
           .eq("slug", slugify(genreToProcess))
           .single();
 
-        if (genreDescription.data?.description) {
+        if (genreError) {
+          console.error("[Cron] Error fetching genre data:", genreError);
+          throw genreError;
+        }
+
+        if (genreData?.description) {
           console.log("[Cron] Found description, attempting image generation");
           try {
-            const imageUrl = await generateImage(genreToProcess, genreDescription.data.description);
+            const imageUrl = await generateImage(genreToProcess, genreData.description);
             console.log(`[Cron] Image generated for ${genreToProcess}: ${imageUrl}`);
+            
+            // Add this section to update the genre with the image URL
+            const { error: updateError } = await supabase
+              .from("genres")
+              .update({ 
+                cover_image: imageUrl,
+                updated_at: new Date().toISOString()
+              })
+              .eq("slug", slugify(genreToProcess));
+
+            if (updateError) {
+              console.error("[Cron] Error updating genre with image URL:", updateError);
+              throw updateError;
+            }
+            
+            console.log(`[Cron] Successfully updated genre with image URL`);
           } catch (imageError) {
             console.error("[Cron] Image generation failed:", imageError);
             errors.push({
