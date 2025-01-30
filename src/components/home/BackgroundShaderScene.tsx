@@ -19,6 +19,7 @@ export default function BackgroundShaderScene() {
   const lastTimeRef = useRef(0)
   const linesRef = useRef<Array<{ chars: string[], angle: number, offset: number }>>([])
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
+  const animationFrameRef = useRef<number>()
   
   useEffect(() => {
     const canvas = canvasRef.current
@@ -30,101 +31,91 @@ export default function BackgroundShaderScene() {
       return
     }
 
-    // Setup for high DPI displays
+    // Improved setup for high DPI displays
     const setupCanvas = () => {
       const dpr = window.devicePixelRatio || 1
       const rect = canvas.getBoundingClientRect()
       
-      // Set logical size
       canvas.width = rect.width * dpr
       canvas.height = rect.height * dpr
-      
-      // Scale all drawing operations
-      ctx.scale(dpr, dpr)
-      
-      // Set display size
-      canvas.style.width = `${rect.width}px`
-      canvas.style.height = `${rect.height}px`
       
       // Store the actual drawing dimensions
       canvas.drawWidth = rect.width
       canvas.drawHeight = rect.height
-
-      // Reset the font after resize since context gets reset
-      ctx.font = '8px monospace'
+      
+      // Scale all drawing operations
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      
+      // Reset the font and text alignment
+      ctx.font = '7px monospace'
       ctx.textAlign = 'center'
     }
 
-    // Create a resize observer for more reliable size updates
-    resizeObserverRef.current = new ResizeObserver((entries) => {
-      if (entries[0]) {
-        setupCanvas()
+    // More efficient resize handling
+    const handleResize = () => {
+      setupCanvas()
+    }
+
+    // Create a resize observer with a more efficient callback
+    resizeObserverRef.current = new ResizeObserver(() => {
+      if (!animationFrameRef.current) {
+        handleResize()
       }
     })
 
-    // Observe the canvas element
-    resizeObserverRef.current.observe(canvas)
-
     const animate = (time: number) => {
-      try {
-        if (!ctx || !canvas) return
-        
-        const deltaTime = (time - lastTimeRef.current) / 1000
-        lastTimeRef.current = time
-        timeRef.current += deltaTime
-        
-        // Use the stored drawing dimensions instead of getBoundingClientRect
-        const centerX = canvas.drawWidth / 2
-        const centerY = canvas.drawHeight / 2
-        const radius = Math.min(canvas.drawWidth, canvas.drawHeight) * 0.8
+      if (!ctx || !canvas) return
 
-        // Clear the entire canvas using the scaled dimensions
-        ctx.clearRect(0, 0, canvas.drawWidth, canvas.drawHeight)
-        const maxDistance = radius * 0.8
+      const deltaTime = time - lastTimeRef.current
+      lastTimeRef.current = time
+      timeRef.current += deltaTime * 0.001 // Convert to seconds and slow down animation
 
-        ctx.font = '8px monospace'
-        ctx.textAlign = 'center'
-        
-        linesRef.current.forEach((line, i) => {
-          const tentacleWave = Math.sin(timeRef.current * 0.5 + line.offset) * 0.2
-          const newAngle = line.angle + 0.0002 + Math.sin(timeRef.current * 0.2 + line.offset) * 0.0005
+      // Clear with canvas dimensions
+      ctx.clearRect(0, 0, canvas.drawWidth, canvas.drawHeight)
 
-          line.angle = newAngle
+      const centerX = canvas.drawWidth / 2
+      const centerY = canvas.drawHeight / 2
+      const radius = Math.min(canvas.drawWidth, canvas.drawHeight) * 0.8 // Reduced radius
+      const maxDistance = radius * 0.8
 
-          line.chars.forEach((char, j) => {
-            const t = j / numCharsPerLine
-            const waveAmplitude = 10 * (1 - t * 0.8)
-            
-            const tentacleOffset = Math.sin(t * 20 + timeRef.current * 1 + i) * 
-                                  (radius * 0.1) * t * tentacleWave
-            const sineOffset = Math.sin(t * 5 + timeRef.current * 0.5 + i * 0.5) * 
-                              waveAmplitude
+      linesRef.current.forEach((line, i) => {
+        const tentacleWave = Math.sin(timeRef.current * 0.5 + line.offset) * 0.15 // Reduced wave intensity
+        const newAngle = line.angle + 0.0001 + Math.sin(timeRef.current * 0.2 + line.offset) * 0.0003
 
-            const x = centerX + 
-                     Math.cos(line.angle) * (radius * t) + 
-                     Math.cos(line.angle + Math.PI/2) * tentacleOffset
-            const y = centerY + 
-                     Math.sin(line.angle) * (radius * t) + 
-                     Math.sin(line.angle + Math.PI/2) * tentacleOffset + 
-                     sineOffset
+        line.angle = newAngle
 
-            const distance = Math.hypot(x - centerX, y - centerY)
-            const opacity = Math.max(0.1, 1 - (distance / maxDistance))
-            
-            ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`
-            ctx.fillText(char, x, y)
-          })
+        line.chars.forEach((char, j) => {
+          const t = j / numCharsPerLine
+          const waveAmplitude = 8 * (1 - t * 0.8) // Reduced amplitude
+          
+          const tentacleOffset = Math.sin(t * 15 + timeRef.current * 0.8 + i) * 
+                                (radius * 0.08) * t * tentacleWave
+          const sineOffset = Math.sin(t * 4 + timeRef.current * 0.4 + i * 0.5) * 
+                            waveAmplitude
+
+          const x = centerX + 
+                   Math.cos(line.angle) * (radius * t) + 
+                   Math.cos(line.angle + Math.PI/2) * tentacleOffset
+          const y = centerY + 
+                   Math.sin(line.angle) * (radius * t) + 
+                   Math.sin(line.angle + Math.PI/2) * tentacleOffset + 
+                   sineOffset
+
+          const distance = Math.hypot(x - centerX, y - centerY)
+          const opacity = Math.max(0.05, 1 - (distance / maxDistance))
+          
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`
+          ctx.fillText(char, x, y)
         })
+      })
 
-        requestAnimationFrame(animate)
-      } catch (error) {
-        console.error('Animation error:', error)
-        cancelAnimationFrame(animationId)
-      }
+      animationFrameRef.current = requestAnimationFrame(animate)
     }
 
     // Initial setup
     setupCanvas()
+    
+    // Initialize lines with fewer characters for better performance
     linesRef.current = Array.from({ length: numLines }, (_, i) => ({
       chars: Array.from({ length: numCharsPerLine }, () => 
         chars[Math.floor(Math.random() * chars.length)]
@@ -133,12 +124,17 @@ export default function BackgroundShaderScene() {
       offset: Math.random() * Math.PI * 2
     }))
 
-    const animationId = requestAnimationFrame(animate)
-    window.addEventListener('resize', setupCanvas)
+    // Start animation
+    lastTimeRef.current = performance.now()
+    animationFrameRef.current = requestAnimationFrame(animate)
+
+    // Observe canvas
+    resizeObserverRef.current.observe(canvas)
 
     return () => {
-      cancelAnimationFrame(animationId)
-      window.removeEventListener('resize', setupCanvas)
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
       resizeObserverRef.current?.disconnect()
     }
   }, [])
@@ -148,7 +144,7 @@ export default function BackgroundShaderScene() {
       <canvas 
         ref={canvasRef}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 w-full h-full z-0"
+        className="pointer-events-none absolute inset-0 w-full h-full z-0 bg-transparent"
       />
     </div>
   )

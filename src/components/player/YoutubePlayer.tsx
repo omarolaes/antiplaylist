@@ -246,12 +246,12 @@ const YoutubePlayer: React.FC<YoutubePlayerProps> = ({ videoId, onVideoEnd }) =>
   return (
     <div className="relative mb-2">
       <div 
-        className="aspect-video overflow-hidden bg-zinc-950/95 rounded-lg backdrop-blur-sm"
+        className="aspect-video overflow-hidden bg-zinc-950/95 rounded-xl backdrop-blur-sm border border-white/15 ring-1 ring-white/10"
       >
         <div 
           ref={containerRef}
           id={playerId.current} 
-          className="w-full h-full" 
+          className="w-full h-full rounded-xl overflow-hidden" 
         />
       </div>
     </div>
