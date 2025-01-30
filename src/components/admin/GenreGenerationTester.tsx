@@ -185,7 +185,7 @@ export default function GenreGenerationTester() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 bg-white relative rounded-2xl my-4">
       {/* Floating Toolbar */}
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-10">
+      <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-10">
         <div className="flex items-center gap-2 px-4 py-3 bg-gray-900 rounded-lg shadow-lg">
           <button
             onClick={testDescription}
