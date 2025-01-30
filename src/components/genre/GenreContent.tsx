@@ -7,7 +7,8 @@ import TrackList from "@/components/player/TrackList";
 import Header from "@/components/home/Header";
 import Footer from "@/components/home/Footer";
 import { IoShuffle } from "react-icons/io5";
-import Image from 'next/image';
+import { HiPlay } from "react-icons/hi2";
+import Image from "next/image";
 
 interface Genre {
   id: string;
@@ -31,17 +32,15 @@ interface GenreContentProps {
 }
 
 export default function GenreContent({ genre, songs }: GenreContentProps) {
-  console.log('GenreContent rendered with songs:', songs);
-  
+  console.log("GenreContent rendered with songs:", songs);
+
   const router = useRouter();
   const [currentVideoId, setCurrentVideoId] = useState<string>(() => {
-    const initialVideo = songs[0]?.video_id || "";
-    console.log('Setting initial video ID:', initialVideo);
-    return initialVideo;
+    return songs[0]?.video_id || "";
   });
 
   const handleTrackSelect = (videoId: string) => {
-    console.log('Track selected:', videoId);
+    console.log("Track selected:", videoId);
     setCurrentVideoId(videoId);
   };
 
@@ -67,49 +66,16 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-900">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-900 to-black">
       <Header />
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-800 to-black pointer-events-none" />
 
       <main className="flex-grow w-full max-w-[1800px] mx-auto px-4 md:px-8 py-6">
-        <div className="flex flex-col">
-          {/* Hero Section with Gradient */}
-          <div className="relative mb-6 p-6 md:p-8 rounded-xl bg-gradient-to-b from-rose-500/20 to-zinc-900">
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start justify-stretch">
-              {genre.cover_image && (
-                <div className="shrink-0 w-48 h-48 md:w-64 md:h-64 shadow-2xl rounded-md overflow-hidden relative">
-                  <Image 
-                    src={genre.cover_image} 
-                    alt={`${genre.name} cover art`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 192px, 224px"
-                    priority
-                  />
-                </div>
-              )}
-              <div className="flex flex-col justify-end w-full">
-                <span className="text-sm font-medium text-white/80">GENRE</span>
-                <h1 className="text-4xl md:text-6xl font-bold text-white mt-2">
-                  {genre.name}
-                </h1>
-                {genre.description && (
-                  <p className="text-white/70 mt-4 text-lg">{genre.description}</p>
-                )}
-              </div>
-                <button
-                  onClick={handleNextGenre}
-                  className="min-w-64 mt-6 inline-flex items-center gap-2 px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-colors font-medium text-lg"
-                >
-                  <span>NEXT GENRE</span>
-                  <IoShuffle className="w-8 h-8" />
-                </button>
-            </div>
-          </div>
-
+        <div className="flex flex-col gap-8">
           {/* Player and Tracklist Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div className="aspect-video w-full bg-zinc-800/50 rounded-lg overflow-hidden shadow-lg">
+              <div className="aspect-video w-full bg-zinc-900 rounded-xl overflow-hidden shadow-xl ring-1 ring-white/10">
                 <YoutubePlayer
                   videoId={currentVideoId}
                   onVideoEnd={handleVideoEnd}
@@ -117,7 +83,7 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
               </div>
             </div>
 
-            <div className="bg-zinc-800/30 rounded-lg p-4">
+            <div className="bg-zinc-900/50 backdrop-blur-xl rounded-xl ring-1 ring-white/10">
               <TrackList
                 songs={songs.map((song) => ({
                   artist: song.artist,
@@ -129,6 +95,54 @@ export default function GenreContent({ genre, songs }: GenreContentProps) {
                 )}
                 onTrackSelect={handleTrackSelect}
               />
+            </div>
+          </div>
+          {/* Hero Section with Dynamic Gradient */}
+          <div className="relative">
+            <div className="relative z-10">
+              {/* Next Genre Button - Moved to top right */}
+              <div className="absolute top-0 right-0">
+                <button
+                  onClick={handleNextGenre}
+                  className="inline-flex items-center gap-3 px-10 py-4 bg-white text-black rounded-full hover:bg-white/90 transition-all transform hover:scale-105 font-medium text-xl shadow-lg"
+                >
+                  <span>Next Genre</span>
+                  <IoShuffle className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                {genre.cover_image && (
+                  <div className="relative group">
+                    <div className="shrink-0 w-48 h-48 md:w-80 md:h-80 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+                      <Image
+                        src={genre.cover_image}
+                        alt={`${genre.name} cover`}
+                        fill
+                        className="object-cover rounded-xl"
+                        sizes="(max-width: 768px) 192px, 280px"
+                        priority
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-col justify-between flex-grow">
+                  <div>
+                    <div className="flex items-center gap-2 text-white/60 uppercase tracking-wider text-xs font-medium mb-2">
+                      Featured Genre
+                    </div>
+                    <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
+                      {genre.name}
+                    </h1>
+                    {genre.description && (
+                      <p className="text-white/70 text-base max-w-2xl leading-relaxed">
+                        {genre.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

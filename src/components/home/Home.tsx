@@ -22,11 +22,12 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen relative">
       <Header />
       <Hero handleStartClick={handleStartClick} />
       <Footer />
-    </>
+      <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black z-0" />
+    </div>
   );
 };
 

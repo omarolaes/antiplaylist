@@ -14,30 +14,91 @@ interface TrackListProps {
   onAddSongs?: () => void;
 }
 
-const TrackList: React.FC<TrackListProps> = ({ songs, currentIndex, onTrackSelect }) => {
-
+const TrackList: React.FC<TrackListProps> = ({ 
+  songs, 
+  currentIndex, 
+  onTrackSelect,
+  onDelete,
+  onLike,
+  isLiked,
+  onAddSongs 
+}) => {
   if (songs.length === 0) return null;
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-white mb-4">Tracks</h2>
-      <div className="space-y-2">
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <h2 className="text-base font-medium text-white/90">Queue</h2>
+        {onAddSongs && (
+          <button 
+            onClick={onAddSongs}
+            className="text-sm text-white/60 hover:text-white transition-colors px-3 py-1.5 rounded-full bg-white/5"
+          >
+            Add Songs
+          </button>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
         {songs.map((song, index) => (
-          <button
+          <div
             key={`${song.videoId}-${index}`}
-            onClick={() => onTrackSelect(song.videoId, index)}
-            className={`w-full text-left p-4 rounded-lg transition-all ${
+            className={`flex items-center gap-3 px-4 py-2.5 ${
               currentIndex === index
-                ? "bg-zinc-700 text-white"
-                : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                ? "bg-white/10"
+                : "hover:bg-white/5"
             }`}
           >
-            <div className="flex flex-col">
-              <span className="font-medium">{song.song}</span>
-              <span className="text-sm text-zinc-400">{song.artist}</span>
-
+            {/* Track Number/Playing Indicator */}
+            <div className="w-6 text-center text-sm font-medium text-white/40">
+              {currentIndex === index ? (
+                <div className="w-2 h-2 mx-auto bg-emerald-500 rounded-full animate-pulse" />
+              ) : (
+                index + 1
+              )}
             </div>
-          </button>
+
+            {/* Track Info */}
+            <button
+              onClick={() => onTrackSelect(song.videoId, index)}
+              className="flex-1 flex items-center text-left"
+            >
+              <div className="flex flex-col min-w-0">
+                <span className={`text-sm font-medium truncate ${
+                  currentIndex === index ? "text-emerald-500" : "text-white/90"
+                }`}>
+                  {song.song}
+                </span>
+                <span className="text-xs text-white/50 truncate">
+                  {song.artist}
+                </span>
+              </div>
+            </button>
+
+            {/* Action Buttons */}
+            <div className={`flex items-center gap-1 ${
+              currentIndex === index ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            } transition-opacity`}>
+              {onLike && (
+                <button
+                  onClick={onLike}
+                  className={`p-1.5 rounded-full ${
+                    isLiked ? "text-rose-500" : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  {isLiked ? "♥" : "♡"}
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(song.videoId)}
+                  className="p-1.5 text-white/60 hover:text-white rounded-full"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
         ))}
       </div>
     </div>

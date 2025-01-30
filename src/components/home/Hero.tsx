@@ -1,5 +1,4 @@
 import React from "react";
-import GenresMarquee from "./GenresMarquee";
 import BackgroundShaderScene from "./BackgroundShaderScene";
 import { IoPlaySharp } from "react-icons/io5";
 
@@ -9,25 +8,22 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ handleStartClick }) => {
   return (
-    <div className="relative w-full flex flex-col items-center justify-center gap-2">
+    <div className="relative z-20 w-full flex flex-col items-center justify-center gap-2">
       <div className="w-full h-[calc(100vh-60px)] relative">
-      <BackgroundShaderScene />
-        <div className="space-y-3 text-center w-full">
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <button
-              onClick={handleStartClick}
-              aria-label="Start listening"
-              className={`mx-auto group relative px-8 py-8 border-2 rounded-sm bg-zinc-950 hover:scale-110 flex items-center gap-3 text-3xl font-semibold uppercase transition-all disabled:opacity-50 animate-fade-in opacity-0`}
-              style={{ animationDelay: "0.25s" }}
-            >
-              <IoPlaySharp
-                className={`w-20 h-20 group-hover:scale-50 transition-transform text-white`}
-              />
-            </button>
-          </div>
+        <BackgroundShaderScene />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <button
+            onClick={handleStartClick}
+            className="inline-flex items-center gap-3 px-10 py-4 bg-white text-black 
+                     rounded-full hover:bg-white/90 transition-all transform 
+                     hover:scale-105 font-medium text-xl shadow-lg animate-fade-in opacity-0"
+            style={{ animationDelay: "0.25s" }}
+          >
+            <IoPlaySharp className="w-6 h-6" />
+            <span>Start Listening</span>
+          </button>
         </div>
       </div>
-      <GenresMarquee />
     </div>
   );
 };
