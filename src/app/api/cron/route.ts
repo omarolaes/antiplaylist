@@ -36,6 +36,15 @@ export async function GET(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // Add error handling for missing API token
+    if (!process.env.REPLICATE_API_TOKEN) {
+      console.error("[Cron] Missing REPLICATE_API_TOKEN environment variable");
+      return NextResponse.json(
+        { error: "Missing required API configuration" },
+        { status: 500 }
+      );
+    }
+
     // Get all possible genres
     const allGenres = getAllGenres();
 
@@ -87,7 +96,8 @@ export async function GET(request: Request) {
         });
         console.log(`[Cron] Successfully processed ${genreToProcess} with ${songs.length} songs`);
         
-        // Generate image for the genre
+        // Add additional logging for debugging
+        console.log("[Cron] Checking for genre description before image generation");
         const genreDescription = await supabase
           .from("genres")
           .select("description")
@@ -95,8 +105,17 @@ export async function GET(request: Request) {
           .single();
 
         if (genreDescription.data?.description) {
-          const imageUrl = await generateImage(genreToProcess, genreDescription.data.description);
-          console.log(`[Cron] Image generated for ${genreToProcess}: ${imageUrl}`);
+          console.log("[Cron] Found description, attempting image generation");
+          try {
+            const imageUrl = await generateImage(genreToProcess, genreDescription.data.description);
+            console.log(`[Cron] Image generated for ${genreToProcess}: ${imageUrl}`);
+          } catch (imageError) {
+            console.error("[Cron] Image generation failed:", imageError);
+            errors.push({
+              genre: genreToProcess,
+              error: imageError instanceof Error ? imageError.message : "Image generation failed"
+            });
+          }
         } else {
           console.warn(`[Cron] Description not found for genre: ${genreToProcess}`);
         }
