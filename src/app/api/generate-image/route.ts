@@ -3,6 +3,13 @@ import { generateImage } from "@/lib/generateImage";
 import { supabase } from "@/lib/supabase";
 import { slugify } from "@/lib/utils/slugify";
 
+interface GenreData {
+  id: string;
+  slug?: string;
+  name?: string;
+  cover_image?: string;
+}
+
 export async function POST(request: Request) {
   try {
     console.log('🚀 Starting image generation process...');
@@ -28,7 +35,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let genreData: any = null;
+    let genreData: GenreData | null = null;
     let songsToUse = songs;
     if (!songsToUse) {
       console.log('🎵 Fetching songs from database for genre:', genre);
@@ -53,13 +60,13 @@ export async function POST(request: Request) {
       const { data: dbSongs, error: dbSongsError } = await supabase
         .from("genre_songs")
         .select("artist, song")
-        .eq("genre_id", genreData.id);
+        .eq("genre_id", genreData?.id || '');
 
       console.log('🎼 Retrieved songs:', {
         count: dbSongs?.length || 0,
         songs: dbSongs,
         error: dbSongsError,
-        genreId: genreData.id
+        genreId: genreData?.id || ''
       });
 
       if (dbSongsError) {
