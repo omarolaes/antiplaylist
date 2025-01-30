@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import YoutubePlayer from '@/components/player/YoutubePlayer';
 import Header from '@/components/home/Header';
-import { TbHeart, TbMusic, TbUser } from "react-icons/tb";
+import { TbHeart, TbMusic } from "react-icons/tb";
 import { TfiControlPlay } from "react-icons/tfi";
 import LoadingSpinner from '@/components/general/LoadingSpinner';
 

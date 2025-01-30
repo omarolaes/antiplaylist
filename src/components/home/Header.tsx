@@ -29,10 +29,6 @@ const Header = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-zinc-900/80 border-b border-white/5">
       <div className="max-w-[1800px] mx-auto">
