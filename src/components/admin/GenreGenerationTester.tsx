@@ -183,72 +183,71 @@ export default function GenreGenerationTester() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-6 bg-white relative rounded-2xl my-4">
-      {/* Floating Toolbar */}
-      <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-10">
-        <div className="flex items-center gap-2 px-4 py-3 bg-gray-900 rounded-lg shadow-lg">
-          <button
-            onClick={testDescription}
-            disabled={!selectedGenre || isLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            <MdDescription className="text-xl" />
-            <span className="text-sm font-medium">
-              {isLoading ? "..." : "Description"}
-            </span>
-          </button>
+    <div className="max-w-6xl mx-auto px-8 py-12">
+      {/* Header Section */}
+      <div className="mb-12 space-y-2">
+        <h1 className="text-4xl font-medium tracking-tight text-gray-900">Genre Generation Lab</h1>
+        <p className="text-base text-gray-500">Test and validate genre-based content generation</p>
+      </div>
+
+      {/* Progress Toolbar */}
+      <div className="mb-12 bg-white rounded-2xl p-1 shadow-sm border border-gray-100">
+        <div className="flex items-center gap-2 relative">
+          {/* Progress Bar */}
+          <div className="absolute inset-0 bg-blue-50 rounded-xl transition-all duration-500" style={{
+            width: `${(Object.values(results).filter(r => r?.success).length / 3) * 100}%`
+          }} />
           
-          <div className="w-px h-6 bg-gray-700" />
-          
-          <button
-            onClick={testSongs}
-            disabled={!selectedGenre || isLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            <MdQueueMusic className="text-xl" />
-            <span className="text-sm font-medium">
-              {isLoading ? "..." : "Songs"}
-            </span>
-          </button>
-          
-          <div className="w-px h-6 bg-gray-700" />
-          
-          <button
-            onClick={testImage}
-            disabled={!selectedGenre || isLoading || !results.description?.success || !results.songs?.success}
-            className="flex items-center gap-2 px-4 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            <MdImage className="text-xl" />
-            <span className="text-sm font-medium">
-              {isLoading ? "..." : "Image"}
-            </span>
-          </button>
+          {/* Steps */}
+          {[
+            { icon: MdDescription, label: "Description", action: testDescription, disabled: !selectedGenre || isLoading, success: results.description?.success },
+            { icon: MdQueueMusic, label: "Songs", action: testSongs, disabled: !selectedGenre || isLoading, success: results.songs?.success },
+            { icon: MdImage, label: "Image", action: testImage, disabled: !selectedGenre || isLoading || !results.description?.success || !results.songs?.success, success: results.image?.success }
+          ].map((step, index) => (
+            <button
+              key={step.label}
+              onClick={step.action}
+              disabled={step.disabled}
+              className={`flex-1 flex items-center gap-3 px-6 py-4 rounded-xl
+                ${step.success ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50 text-gray-600'} 
+                disabled:opacity-50 disabled:cursor-not-allowed transition-all relative z-10`}
+            >
+              <div className={`flex items-center justify-center w-10 h-10 rounded-xl border 
+                ${step.success ? 'border-blue-200 bg-blue-100' : 'border-gray-200 bg-gray-50'}`}>
+                <step.icon className="text-xl" />
+              </div>
+              <div className="flex flex-col items-start">
+                <span className="text-xs text-gray-400">Step {index + 1}</span>
+                <span className="text-sm font-medium">
+                  {isLoading ? "Processing..." : step.label}
+                </span>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-medium tracking-tight text-gray-900">Genre Generation Tester</h1>
-        <p className="text-sm text-gray-500">Available genres: {availableGenres.length}</p>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Left Column */}
         <div>
           {/* Genres Grid */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Genre
-            </label>
-            <div className="grid grid-cols-4 gap-1.5 max-h-96 overflow-y-auto p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">
+                Available Genres
+              </label>
+              <span className="text-sm text-gray-500">{availableGenres.length} genres</span>
+            </div>
+            <div className="sticky top-0 grid grid-cols-3 gap-2 max-h-[calc(100vh-200px)] overflow-y-auto p-4 rounded-xl bg-white shadow-sm border border-gray-100">
               {availableGenres.map((genre) => (
                 <button
                   key={genre}
                   onClick={() => setSelectedGenre(genre)}
                   disabled={isLoading}
-                  className={`px-2 py-1.5 text-xs rounded border transition-all truncate
+                  className={`px-4 py-2.5 text-sm rounded-lg border transition-all truncate
                     ${selectedGenre === genre 
-                      ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                      : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700'
+                      ? 'border-blue-200 bg-blue-50 text-blue-600' 
+                      : 'border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {genre}
@@ -256,108 +255,115 @@ export default function GenreGenerationTester() {
               ))}
             </div>
           </div>
-
         </div>
 
-        {/* Right Column */}
-        <div className="space-y-6">
+        {/* Right Column - Results */}
+        <div className="space-y-8">
           {/* Description Results */}
           {results.description && (
-            <div className="p-3 border border-gray-200 rounded bg-gray-50">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm font-medium text-gray-900">Description</h2>
-                <span className={`px-2 py-0.5 text-xs rounded-full ${
-                  results.description.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            <div className="rounded-xl overflow-hidden bg-white shadow-sm border border-gray-100">
+              <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100">
+                <h2 className="text-sm font-medium text-gray-700">Description</h2>
+                <span className={`px-3 py-1 text-xs rounded-full ${
+                  results.description.success 
+                    ? 'bg-blue-50 text-blue-600' 
+                    : 'bg-red-50 text-red-600'
                 }`}>
-                  {results.description.success ? 'Success' : 'Failed'}
+                  {results.description.success ? 'Generated' : 'Failed'}
                 </span>
               </div>
-              {results.description.success ? (
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {typeof results.description.data === 'string' 
-                    ? results.description.data 
-                    : Array.isArray(results.description.data)
-                      ? ''
-                      : results.description.data?.description}
-                </p>
-              ) : (
-                <p className="text-sm text-red-600">{results.description.error}</p>
-              )}
+              <div className="p-6">
+                {results.description.success ? (
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {typeof results.description.data === 'string' 
+                      ? results.description.data 
+                      : Array.isArray(results.description.data)
+                        ? ''
+                        : results.description.data?.description}
+                  </p>
+                ) : (
+                  <p className="text-sm text-red-600">{results.description.error}</p>
+                )}
+              </div>
             </div>
           )}
           {/* Songs Results */}
           {results.songs && (
-            <div className="border border-gray-200 rounded bg-gray-50 divide-y divide-gray-200">
-              <div className="p-3 flex items-center justify-between">
-                <h2 className="text-sm font-medium text-gray-900">Songs</h2>
-                <span className={`px-2 py-0.5 text-xs rounded-full ${
-                  results.songs.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            <div className="rounded-xl overflow-hidden bg-white shadow-sm border border-gray-100">
+              <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100">
+                <h2 className="text-sm font-medium text-gray-700">Songs</h2>
+                <span className={`px-3 py-1 text-xs rounded-full ${
+                  results.songs.success ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'
                 }`}>
-                  {results.songs.success ? 'Success' : 'Failed'}
+                  {results.songs.success ? 'Generated' : 'Failed'}
                 </span>
               </div>
-              {results.songs.success ? (
-                <div className="divide-y divide-gray-200">
-                  {Array.isArray(results.songs.data) && results.songs.data.map((song: Song, index: number) => (
-                    <div key={`${song.artist}-${song.song}-${index}`} 
-                         className="p-3 bg-white hover:bg-gray-50 transition-all">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{song.artist}</p>
-                          <p className="text-sm text-gray-600">{song.song}</p>
+              <div className="p-6">
+                {results.songs.success ? (
+                  <div className="divide-y divide-gray-200">
+                    {Array.isArray(results.songs.data) && results.songs.data.map((song: Song, index: number) => (
+                      <div key={`${song.artist}-${song.song}-${index}`} 
+                           className="p-3 bg-white hover:bg-gray-50 transition-all">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{song.artist}</p>
+                            <p className="text-sm text-gray-600">{song.song}</p>
+                          </div>
+                          {song.videoId && (
+                            <button
+                              onClick={() => handleTrackSelect(song.videoId)}
+                              className="text-xs px-2 py-1 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              {selectedTrack === song.videoId ? 'Hide' : 'Play'}
+                            </button>
+                          )}
                         </div>
-                        {song.videoId && (
-                          <button
-                            onClick={() => handleTrackSelect(song.videoId)}
-                            className="text-xs px-2 py-1 text-blue-600 hover:bg-blue-50 rounded"
-                          >
-                            {selectedTrack === song.videoId ? 'Hide' : 'Play'}
-                          </button>
+                        {selectedTrack === song.videoId && song.videoId && (
+                          <div className="mt-3 aspect-video">
+                            <iframe
+                              className="w-full h-full rounded"
+                              src={`https://www.youtube.com/embed/${song.videoId}`}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
                         )}
                       </div>
-                      {selectedTrack === song.videoId && song.videoId && (
-                        <div className="mt-3 aspect-video">
-                          <iframe
-                            className="w-full h-full rounded"
-                            src={`https://www.youtube.com/embed/${song.videoId}`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-red-600 p-3">{results.songs.error}</p>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-red-600">{results.songs.error}</p>
+                )}
+              </div>
             </div>
           )}
 
           {/* Image Results */}
           {results.image && (
-            <div className="border border-gray-200 rounded bg-gray-50">
-              <div className="p-3 flex items-center justify-between">
-                <h2 className="text-sm font-medium text-gray-900">Generated Image</h2>
-                <span className={`px-2 py-0.5 text-xs rounded-full ${
-                  results.image.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            <div className="rounded-xl overflow-hidden bg-white shadow-sm border border-gray-100">
+              <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100">
+                <h2 className="text-sm font-medium text-gray-700">Generated Image</h2>
+                <span className={`px-3 py-1 text-xs rounded-full ${
+                  results.image.success ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'
                 }`}>
-                  {results.image.success ? 'Success' : 'Failed'}
+                  {results.image.success ? 'Generated' : 'Failed'}
                 </span>
               </div>
-              {results.image.success ? (
-                <div className="border-t border-gray-200">
-                  <Image 
-                    src={results.image.data as string} 
-                    alt={`Generated image for ${selectedGenre}`}
-                    width={500}
-                    height={300}
-                    className="w-full object-cover"
-                  />
-                </div>
-              ) : (
-                <p className="text-sm text-red-600 p-3">{results.image.error}</p>
-              )}
+              <div className="p-6">
+                {results.image.success ? (
+                  <div className="border-t border-gray-200">
+                    <Image 
+                      src={results.image.data as string} 
+                      alt={`Generated image for ${selectedGenre}`}
+                      width={500}
+                      height={300}
+                      className="w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-sm text-red-600">{results.image.error}</p>
+                )}
+              </div>
             </div>
           )}
         </div>
