@@ -13,7 +13,7 @@ export async function generateImage(genre: string, description: string) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const contextPrompt = `Give me a product photo similar to IKEA but you design a chair for the "${genre}" music genre. Focus on the time period, location, and atmosphere where this genre emerged. You get inspired by the industrial designers, artists and movements from that time and place related to the genre. For context, the genre is ${genre} and the description is ${description}.`;
+    const contextPrompt = `Give me a product photo similar to IKEA but you design a chair for the "${genre}" music genre. Focus on the time period, location, and atmosphere where this genre emerged. You get inspired by the industrial designers, visual artists, materials, construction techniques, and processes from that time and place related to the genre. Also surrounded by that context. You should focus on making the chair unique, it can't look generic it should have a lot of personality. For context, the genre is ${genre} and the description is ${description}.`;
 
     console.log("Context prompt:", contextPrompt);
 
@@ -22,7 +22,7 @@ export async function generateImage(genre: string, description: string) {
       messages: [
         {
           role: "system",
-          content: `You are a master of creating text-to-image prompts for product photos. The image generated should have the lighting, colors, style, and composition of a product photo similar to IKEA. Return just the text-to-image prompt and nothing else. Make sure the image should look realistic and not like a painting.`,
+          content: `You are a master of creating text-to-image prompts for product photos. The image generated should have the lighting, colors, style, and composition of a product photo similar to IKEA. Return just the text-to-image prompt and nothing else. The photo should have natural lighting and not be too dark or too bright. Like ikea photos but with context and unique.`,
         },
         {
           role: "user",
